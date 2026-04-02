@@ -5321,77 +5321,82 @@ with tab_bcr:
             st.plotly_chart(fig_cum, use_container_width=True)
 
             # ── Sensitivity Heatmap (RBB only — production model) ──────
-            st.subheader("Sensitivity Heatmap — Failure Probability (RBB)")
-            st.markdown(
-                f"<span style='color:{TEXT_DIM};font-size:0.85rem;'>"
-                f"Failure probability across BCR x Dividend Rate combinations. "
-                f"Uses RBB price paths (production model).</span>",
-                unsafe_allow_html=True,
-            )
+            if "rbb" in _bcr_models:
+                st.subheader("Sensitivity Heatmap — Failure Probability (RBB)")
+                st.markdown(
+                    f"<span style='color:{TEXT_DIM};font-size:0.85rem;'>"
+                    f"Failure probability across BCR x Dividend Rate combinations. "
+                    f"Uses RBB price paths (production model).</span>",
+                    unsafe_allow_html=True,
+                )
 
-            rbb_monthly = _bcr_models["rbb"]["monthly_prices"]
-            n_sims_heat = _bcr_models["rbb"]["n_sims"]
-            _heat_bcrs = [10, 20, 30, 40, 50, 60, 80, 100]
-            _heat_divs = [0.05, 0.08, 0.10, 0.12, 0.15]
-            _heat_z = np.zeros((len(_heat_divs), len(_heat_bcrs)))
+                rbb_monthly = _bcr_models["rbb"]["monthly_prices"]
+                n_sims_heat = _bcr_models["rbb"]["n_sims"]
+                _heat_bcrs = [10, 20, 30, 40, 50, 60, 80, 100]
+                _heat_divs = [0.05, 0.08, 0.10, 0.12, 0.15]
+                _heat_z = np.zeros((len(_heat_divs), len(_heat_bcrs)))
 
-            for di, dr in enumerate(_heat_divs):
-                for bi, br in enumerate(_heat_bcrs):
-                    h_ppe_lev = 1.0 / (br * dr) if (br * dr) > 0 else 0
-                    h_ppe_not = _bcr_params["nav"] * h_ppe_lev
-                    h_ann_div = h_ppe_not * dr
-                    h_ann_opex = _bcr_params["nav"] * _bcr_params["opex_rate"]
-                    h_monthly = (h_ann_div / 12.0) + (h_ann_opex / 12.0)
+                for di, dr in enumerate(_heat_divs):
+                    for bi, br in enumerate(_heat_bcrs):
+                        h_ppe_lev = 1.0 / (br * dr) if (br * dr) > 0 else 0
+                        h_ppe_not = _bcr_params["nav"] * h_ppe_lev
+                        h_ann_div = h_ppe_not * dr
+                        h_ann_opex = _bcr_params["nav"] * _bcr_params["opex_rate"]
+                        h_monthly = (h_ann_div / 12.0) + (h_ann_opex / 12.0)
 
-                    n_fail = 0
-                    for i in range(n_sims_heat):
-                        btc_h = _bcr_params["nav"] / _init_px
-                        cash_h = _bcr_params["cash_months"] * h_monthly
-                        path_ok = True
-                        for m in range(n_months):
-                            price = rbb_monthly[i, m]
-                            btc_obl = h_monthly * _bcr_params["btc_fraction"]
-                            if cash_h >= btc_obl:
-                                cash_h -= btc_obl
-                            else:
-                                sell_amt = btc_obl - cash_h
-                                cash_h = 0.0
-                                if price > 0:
-                                    btc_h -= sell_amt / price
-                            btc_val = btc_h * price
-                            cur_bcr = btc_val / h_ann_div if h_ann_div > 0 else float("inf")
-                            if _bcr_params["fail_mode"] == "BCR < 1":
-                                if cur_bcr < 1.0:
-                                    path_ok = False
-                                    break
-                            else:
-                                if btc_val < h_ppe_not:
-                                    path_ok = False
-                                    break
-                        if not path_ok:
-                            n_fail += 1
-                    _heat_z[di, bi] = n_fail / n_sims_heat * 100
+                        n_fail = 0
+                        for i in range(n_sims_heat):
+                            btc_h = _bcr_params["nav"] / _init_px
+                            cash_h = _bcr_params["cash_months"] * h_monthly
+                            path_ok = True
+                            for m in range(n_months):
+                                price = rbb_monthly[i, m]
+                                btc_obl = h_monthly * _bcr_params["btc_fraction"]
+                                if cash_h >= btc_obl:
+                                    cash_h -= btc_obl
+                                else:
+                                    sell_amt = btc_obl - cash_h
+                                    cash_h = 0.0
+                                    if price > 0:
+                                        btc_h -= sell_amt / price
+                                btc_val = btc_h * price
+                                cur_bcr = btc_val / h_ann_div if h_ann_div > 0 else float("inf")
+                                if _bcr_params["fail_mode"] == "BCR < 1":
+                                    if cur_bcr < 1.0:
+                                        path_ok = False
+                                        break
+                                else:
+                                    if btc_val < h_ppe_not:
+                                        path_ok = False
+                                        break
+                            if not path_ok:
+                                n_fail += 1
+                        _heat_z[di, bi] = n_fail / n_sims_heat * 100
 
-            fig_heat = go.Figure(data=go.Heatmap(
-                z=_heat_z,
-                x=[f"{b}x" for b in _heat_bcrs],
-                y=[f"{d*100:.0f}%" for d in _heat_divs],
-                colorscale=[[0, "#0a0a0a"], [0.01, "#10b981"], [0.05, "#eab308"],
-                            [0.2, "#f7931a"], [0.5, "#ef4444"], [1.0, "#7f1d1d"]],
-                text=[[f"{v:.1f}%" for v in row] for row in _heat_z],
-                texttemplate="%{text}",
-                textfont=dict(size=12, color="#ffffff"),
-                colorbar=dict(title="Fail %", tickfont=dict(color="#cccccc"),
-                              titlefont=dict(color="#cccccc")),
-                zmin=0, zmax=max(100, float(_heat_z.max())),
-            ))
-            fig_heat.update_layout(
-                title="4-Year Failure Probability: BCR vs Dividend Rate",
-                xaxis_title="Bitcoin Coverage Ratio",
-                yaxis_title="Annual Dividend Rate",
-                height=450, **PLOTLY_LAYOUT,
-            )
-            st.plotly_chart(fig_heat, use_container_width=True)
+                _heat_zmax = float(_heat_z.max())
+                if _heat_zmax < 0.1:
+                    _heat_zmax = 1.0  # avoid degenerate colorscale when all zeros
+
+                fig_heat = go.Figure(data=go.Heatmap(
+                    z=_heat_z,
+                    x=[f"{b}x" for b in _heat_bcrs],
+                    y=[f"{d*100:.0f}%" for d in _heat_divs],
+                    colorscale=[[0, "#0a0a0a"], [0.05, "#10b981"], [0.15, "#eab308"],
+                                [0.4, "#f7931a"], [0.7, "#ef4444"], [1.0, "#7f1d1d"]],
+                    text=[[f"{v:.1f}%" for v in row] for row in _heat_z],
+                    texttemplate="%{text}",
+                    textfont=dict(size=12, color="#ffffff"),
+                    colorbar=dict(title="Fail %", tickfont=dict(color="#cccccc"),
+                                  titlefont=dict(color="#cccccc")),
+                    zmin=0, zmax=_heat_zmax,
+                ))
+                fig_heat.update_layout(
+                    title="4-Year Failure Probability: BCR vs Dividend Rate",
+                    xaxis_title="Bitcoin Coverage Ratio",
+                    yaxis_title="Annual Dividend Rate",
+                    height=450, **PLOTLY_LAYOUT,
+                )
+                st.plotly_chart(fig_heat, use_container_width=True)
 
             # ── What This Means ────────────────────────────────────────
             _rbb_mr = _bcr_models["rbb"]
