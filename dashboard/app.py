@@ -5159,71 +5159,97 @@ with tab_bcr:
             _BCR_MODEL_LABELS = {"rbb": "RBB (Block Bootstrap)", "garch": "GARCH(1,1)", "gbm": "GBM (Baseline)"}
             month_dates = [_bcr_start_ts + pd.Timedelta(days=30 * (m + 1)) for m in range(n_months)]
 
-            # ── HERO CHART: 3-Model BCR Percentile Fan Chart ───────────
-            st.subheader("BCR Trajectory — 3-Model Percentile Comparison")
+            # ── HERO CHART: BCR Percentile Curve (Inverse CDF) ──────────
+            st.subheader("BCR Percentile Curve — Probability of Default")
 
-            fig_bcr = go.Figure()
+            _bcr_curve_mode = st.selectbox(
+                "BCR Metric", ["Terminal BCR (end of horizon)", "Minimum BCR (worst point along path)"],
+                key="bcr_curve_mode",
+            )
+            _use_terminal = "Terminal" in _bcr_curve_mode
 
-            # RBB gets the filled CI envelope (reference model)
-            rbb_bcr = _bcr_models["rbb"]["all_bcr_series"]
-            rbb_p5 = np.percentile(rbb_bcr, 5, axis=0)
-            rbb_p25 = np.percentile(rbb_bcr, 25, axis=0)
-            rbb_p75 = np.percentile(rbb_bcr, 75, axis=0)
-            rbb_p95 = np.percentile(rbb_bcr, 95, axis=0)
+            _pct_range = list(range(1, 100))
+            fig_bcr_curve = go.Figure()
 
-            fig_bcr.add_trace(go.Scatter(
-                x=month_dates + month_dates[::-1],
-                y=rbb_p5.tolist() + rbb_p95.tolist()[::-1],
-                fill="toself", fillcolor="rgba(247,147,26,0.06)",
-                line=dict(color="rgba(0,0,0,0)"), name="RBB 90% CI",
-            ))
-            fig_bcr.add_trace(go.Scatter(
-                x=month_dates + month_dates[::-1],
-                y=rbb_p25.tolist() + rbb_p75.tolist()[::-1],
-                fill="toself", fillcolor="rgba(247,147,26,0.15)",
-                line=dict(color="rgba(0,0,0,0)"), name="RBB 50% CI",
-            ))
-
-            # Median + P5 lines for all 3 models
             for mkey in ["rbb", "garch", "gbm"]:
                 if mkey not in _bcr_models:
                     continue
-                bcr_series = _bcr_models[mkey]["all_bcr_series"]
-                m_p5 = np.percentile(bcr_series, 5, axis=0)
-                m_p50 = np.median(bcr_series, axis=0)
-                color = _BCR_MODEL_COLORS[mkey]
-                label = _BCR_MODEL_LABELS[mkey]
-                is_rbb = mkey == "rbb"
+                mr = _bcr_models[mkey]
+                data_arr = mr["terminal_bcr"] if _use_terminal else mr["min_bcr"]
+                y_vals = np.percentile(data_arr, _pct_range)
 
-                fig_bcr.add_trace(go.Scatter(
-                    x=month_dates, y=m_p50.tolist(), mode="lines",
-                    line=dict(color=color, width=2.5 if is_rbb else 2,
-                              dash="solid" if is_rbb else "dash"),
-                    name=f"{label} Median",
-                ))
-                fig_bcr.add_trace(go.Scatter(
-                    x=month_dates, y=m_p5.tolist(), mode="lines",
-                    line=dict(color=color, width=1, dash="dot"),
-                    name=f"{label} P5",
+                fig_bcr_curve.add_trace(go.Scatter(
+                    x=_pct_range, y=y_vals.tolist(), mode="lines",
+                    line=dict(color=_BCR_MODEL_COLORS[mkey], width=2.5 if mkey == "rbb" else 2),
+                    name=_BCR_MODEL_LABELS[mkey],
                 ))
 
             # Failure threshold
-            fig_bcr.add_hline(
+            fig_bcr_curve.add_hline(
                 y=1.0, line_dash="dash", line_color=RED, line_width=2,
                 annotation_text="BCR = 1 (Failure Threshold)",
                 annotation_font_color=RED, annotation_font_size=12,
+                annotation_position="top left",
             )
-            y_max = min(float(np.percentile(rbb_p95, 95)) * 1.2, float(rbb_p95.max()) * 1.1)
-            y_max = max(y_max, _bcr_params["bcr"] * 1.5)
-            _bcr_layout = {k: v for k, v in PLOTLY_LAYOUT.items() if k != "yaxis"}
-            fig_bcr.update_layout(
-                title=f"Bitcoin Coverage Ratio — All Models ({n_months} Months, {_bcr_models['rbb']['n_sims']:,} Paths Each)",
-                xaxis_title="", yaxis_title="BCR (BTC Value / Annual Dividend)",
-                yaxis=dict(range=[0, y_max], gridcolor=GRID, zerolinecolor=GRID,
-                           tickfont=dict(color="#bbbbbb"), title=dict(font=dict(color="#cccccc"))),
+
+            _bcr_layout = {k: v for k, v in PLOTLY_LAYOUT.items() if k not in ("yaxis", "xaxis")}
+            _metric_label = "Terminal BCR" if _use_terminal else "Minimum BCR"
+            fig_bcr_curve.update_layout(
+                title=f"{_metric_label} by Percentile — {_bcr_models['rbb']['n_sims']:,} Paths Per Model",
+                xaxis=dict(title="Percentile", gridcolor=GRID, zerolinecolor=GRID,
+                           tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc"),
+                           tickvals=[1, 5, 10, 25, 50, 75, 90, 95, 99],
+                           range=[0, 100]),
+                yaxis=dict(title=_metric_label, type="log", gridcolor=GRID, zerolinecolor=GRID,
+                           tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc")),
                 height=650, **_bcr_layout,
             )
-            st.plotly_chart(fig_bcr, use_container_width=True)
+            st.plotly_chart(fig_bcr_curve, use_container_width=True)
+
+            # ── BCR Time Series Fan Chart (secondary) ──────────────────
+            with st.expander("BCR Trajectory Over Time (Fan Chart)"):
+                rbb_bcr = _bcr_models["rbb"]["all_bcr_series"]
+                rbb_p5 = np.percentile(rbb_bcr, 5, axis=0)
+                rbb_p25 = np.percentile(rbb_bcr, 25, axis=0)
+                rbb_p50 = np.median(rbb_bcr, axis=0)
+                rbb_p75 = np.percentile(rbb_bcr, 75, axis=0)
+                rbb_p95 = np.percentile(rbb_bcr, 95, axis=0)
+
+                fig_bcr_ts = go.Figure()
+                fig_bcr_ts.add_trace(go.Scatter(
+                    x=month_dates + month_dates[::-1],
+                    y=rbb_p5.tolist() + rbb_p95.tolist()[::-1],
+                    fill="toself", fillcolor="rgba(247,147,26,0.06)",
+                    line=dict(color="rgba(0,0,0,0)"), name="RBB 90% CI",
+                ))
+                fig_bcr_ts.add_trace(go.Scatter(
+                    x=month_dates + month_dates[::-1],
+                    y=rbb_p25.tolist() + rbb_p75.tolist()[::-1],
+                    fill="toself", fillcolor="rgba(247,147,26,0.15)",
+                    line=dict(color="rgba(0,0,0,0)"), name="RBB 50% CI",
+                ))
+                for mkey in ["rbb", "garch", "gbm"]:
+                    if mkey not in _bcr_models:
+                        continue
+                    m_p50 = np.median(_bcr_models[mkey]["all_bcr_series"], axis=0)
+                    is_rbb = mkey == "rbb"
+                    fig_bcr_ts.add_trace(go.Scatter(
+                        x=month_dates, y=m_p50.tolist(), mode="lines",
+                        line=dict(color=_BCR_MODEL_COLORS[mkey], width=2.5 if is_rbb else 2,
+                                  dash="solid" if is_rbb else "dash"),
+                        name=f"{_BCR_MODEL_LABELS[mkey]} Median",
+                    ))
+                fig_bcr_ts.add_hline(y=1.0, line_dash="dash", line_color=RED, line_width=2)
+                y_max = max(float(rbb_p95.max()) * 1.1, _bcr_params["bcr"] * 1.5)
+                _ts_layout = {k: v for k, v in PLOTLY_LAYOUT.items() if k != "yaxis"}
+                fig_bcr_ts.update_layout(
+                    title=f"BCR Over Time — {n_months} Months",
+                    xaxis_title="", yaxis_title="BCR",
+                    yaxis=dict(range=[0, y_max], gridcolor=GRID, zerolinecolor=GRID,
+                               tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc")),
+                    height=500, **_ts_layout,
+                )
+                st.plotly_chart(fig_bcr_ts, use_container_width=True)
 
             # ── Summary Table — All 3 Models ───────────────────────────
             st.subheader("Solvency Summary — All Models")
