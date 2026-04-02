@@ -5026,34 +5026,61 @@ with tab_bcr:
         unsafe_allow_html=True,
     )
 
-    # ── Inline Parameters ──────────────────────────────────────────────
-    st.subheader("Parameters")
-    bcr_c1, bcr_c2, bcr_c3 = st.columns(3)
-    with bcr_c1:
-        bcr_nav = st.number_input("NAV — BTC Treasury ($)", value=1_000_000_000, step=100_000_000, format="%d", key="bcr_nav")
-        bcr_ratio = st.number_input("BCR (Coverage Ratio)", value=40.0, step=5.0, format="%.0f", key="bcr_ratio")
-    with bcr_c2:
-        bcr_div_rate = st.number_input("Dividend Rate (annual %)", value=10.0, step=1.0, format="%.1f", key="bcr_div_rate") / 100.0
-        bcr_cash_months = st.number_input("Cash Reserve (months)", value=0, step=1, min_value=0, max_value=24, key="bcr_cash_months")
-    with bcr_c3:
-        bcr_btc_fraction = st.number_input("BTC Fraction (%)", value=100.0, step=5.0, min_value=0.0, max_value=100.0, format="%.0f", key="bcr_btc_frac") / 100.0
+    # ── Primary Input: BCR ────────────────────────────────────────────
+    st.markdown(
+        f"<div style='background:{PANEL};border:1px solid {GRID};border-radius:6px;padding:12px;margin-bottom:12px;'>"
+        f"<span style='color:{TEXT_DIM};font-size:0.8rem;'>"
+        f"<b>BCR = 1 / (amplification x dividend_rate)</b> — a normalized, self-contained metric. "
+        f"Two products with different amplification/dividend combinations but the same BCR have "
+        f"identical risk profiles. BCR is the only variable that drives the simulation.</span></div>",
+        unsafe_allow_html=True,
+    )
+
+    _bcr_p1, _bcr_p2, _bcr_p3, _bcr_p4 = st.columns(4)
+    with _bcr_p1:
+        bcr_ratio = st.number_input("BCR (Coverage Ratio)", value=40.0, step=2.0,
+                                     min_value=2.0, max_value=100.0, format="%.0f", key="bcr_ratio")
+    with _bcr_p2:
         bcr_opex_rate = st.number_input("OpEx (annual % of NAV)", value=0.0, step=0.5, format="%.1f", key="bcr_opex") / 100.0
+    with _bcr_p3:
+        bcr_cash_months = st.number_input("Cash Reserve (months)", value=0, step=1, min_value=0, max_value=24, key="bcr_cash_months")
+    with _bcr_p4:
+        bcr_btc_fraction = st.number_input("BTC Fraction (%)", value=100.0, step=5.0,
+                                            min_value=0.0, max_value=100.0, format="%.0f", key="bcr_btc_frac") / 100.0
     bcr_fail_mode = st.selectbox("Failure Condition", ["BCR < 1", "NAV < PPE Notional"], key="bcr_fail_mode")
 
-    # ── Derived values ─────────────────────────────────────────────────
-    _bcr_ppe_leverage = 1.0 / (bcr_ratio * bcr_div_rate) if (bcr_ratio * bcr_div_rate) > 0 else 0
-    _bcr_ppe_notional = bcr_nav * _bcr_ppe_leverage
-    _bcr_annual_dividend = _bcr_ppe_notional * bcr_div_rate
-    _bcr_annual_opex = bcr_nav * bcr_opex_rate
-    _bcr_monthly_dividend = _bcr_annual_dividend / 12.0
-    _bcr_monthly_opex = _bcr_annual_opex / 12.0
-    _bcr_monthly_obligation = _bcr_monthly_dividend + _bcr_monthly_opex
+    # ── Dollar Context (collapsible) ───────────────────────────────────
+    # Default NAV for simulation (BCR drives everything, NAV just scales dollars)
+    bcr_nav = 1_000_000_000  # will be overridden if expander is opened
+    bcr_amplification = 0.25
+    with st.expander("Dollar Context (presentation only — does not affect simulation)"):
+        _dc1, _dc2 = st.columns(2)
+        with _dc1:
+            bcr_nav = st.number_input("NAV — BTC Treasury ($)", value=1_000_000_000,
+                                       step=100_000_000, format="%d", key="bcr_nav")
+        with _dc2:
+            bcr_amplification = st.number_input("Amplification (%)", value=25.0,
+                                                 step=5.0, min_value=1.0, max_value=100.0,
+                                                 format="%.1f", key="bcr_amp") / 100.0
+        # Derive from BCR + amplification
+        bcr_div_rate = 1.0 / (bcr_ratio * bcr_amplification) if (bcr_ratio * bcr_amplification) > 0 else 0
+        _bcr_ppe_notional = bcr_nav * bcr_amplification
+        _bcr_annual_dividend = bcr_nav / bcr_ratio  # NAV / BCR — always true
+        _bcr_annual_opex = bcr_nav * bcr_opex_rate
+        _bcr_monthly_obligation = (_bcr_annual_dividend / 12.0) + (_bcr_annual_opex / 12.0)
 
-    dc1, dc2, dc3, dc4 = st.columns(4)
-    dc1.metric("PPE Notional", f"${_bcr_ppe_notional:,.0f}")
-    dc2.metric("Annual Dividend", f"${_bcr_annual_dividend:,.0f}")
-    dc3.metric("Monthly Obligation", f"${_bcr_monthly_obligation:,.0f}")
-    dc4.metric("Starting BCR", f"{bcr_ratio:.0f}x")
+        _dd1, _dd2, _dd3, _dd4 = st.columns(4)
+        _dd1.metric("Implied Div Rate", f"{bcr_div_rate * 100:.1f}%")
+        _dd2.metric("PPE Notional", f"${_bcr_ppe_notional:,.0f}")
+        _dd3.metric("Annual Dividend", f"${_bcr_annual_dividend:,.0f}")
+        _dd4.metric("Monthly Obligation", f"${_bcr_monthly_obligation:,.0f}")
+
+    # ── Core derived values for simulation ─────────────────────────────
+    # BCR is the only driver: annual_dividend = NAV / BCR
+    _bcr_annual_dividend = bcr_nav / bcr_ratio if bcr_ratio > 0 else 0
+    _bcr_annual_opex = bcr_nav * bcr_opex_rate
+    _bcr_monthly_obligation = (_bcr_annual_dividend / 12.0) + (_bcr_annual_opex / 12.0)
+    _bcr_ppe_notional = bcr_nav * bcr_amplification
 
     st.divider()
 
@@ -5233,7 +5260,9 @@ with tab_bcr:
                            tickvals=[1, 5, 10, 25, 50, 75, 90, 95, 99],
                            range=[0, 100]),
                 yaxis=dict(title=_metric_label, type="log", gridcolor=GRID, zerolinecolor=GRID,
-                           tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc")),
+                           tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc"),
+                           tickvals=[0.1, 0.5, 1, 2, 5, 10, 20, 50, 100, 500, 1000, 5000, 10000, 100000, 1000000],
+                           ticktext=["0.1", "0.5", "1", "2", "5", "10", "20", "50", "100", "500", "1K", "5K", "10K", "100K", "1M"]),
                 height=800, **_bcr_layout,
             )
             st.plotly_chart(fig_bcr_curve, use_container_width=True)
@@ -5319,7 +5348,7 @@ with tab_bcr:
 
                 rbb_monthly = _bcr_models["rbb"]["monthly_prices"]
                 n_sims_heat = _bcr_models["rbb"]["n_sims"]
-                _heat_bcrs = [10, 20, 30, 40, 50, 60, 80, 100]
+                _heat_bcrs = list(range(2, 42, 2))
                 _heat_divs = [0.05, 0.08, 0.10, 0.12, 0.15]
                 _heat_z = np.zeros((len(_heat_divs), len(_heat_bcrs)))
 
@@ -5395,7 +5424,7 @@ with tab_bcr:
                 unsafe_allow_html=True,
             )
 
-            _sens_bcrs = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 80, 100]
+            _sens_bcrs = list(range(2, 42, 2))
             _sens_pd = {mkey: [] for mkey in _bcr_models}   # PD % per BCR level
             _sens_p5 = {mkey: [] for mkey in _bcr_models}   # P5 min BCR per level
 
