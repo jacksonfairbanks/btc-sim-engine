@@ -5385,6 +5385,106 @@ with tab_bcr:
                 )
                 st.plotly_chart(fig_heat, use_container_width=True)
 
+            # ── BCR Sensitivity Analysis ────────────────────────────────
+            st.subheader("BCR Sensitivity Analysis")
+            st.markdown(
+                f"<span style='color:{TEXT_DIM};font-size:0.85rem;'>"
+                f"Same {_bcr_models['rbb']['n_sims']:,} price paths per model, "
+                f"re-run solvency at different starting BCR levels. "
+                f"Dividend rate fixed at {_bcr_params['div_rate']*100:.0f}%.</span>",
+                unsafe_allow_html=True,
+            )
+
+            _sens_bcrs = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 80, 100]
+            _sens_pd = {mkey: [] for mkey in _bcr_models}   # PD % per BCR level
+            _sens_p5 = {mkey: [] for mkey in _bcr_models}   # P5 min BCR per level
+
+            for test_bcr in _sens_bcrs:
+                test_ppe_lev = 1.0 / (test_bcr * _bcr_params["div_rate"]) if (test_bcr * _bcr_params["div_rate"]) > 0 else 0
+                test_ppe_not = _bcr_params["nav"] * test_ppe_lev
+                test_ann_div = test_ppe_not * _bcr_params["div_rate"]
+                test_ann_opex = _bcr_params["nav"] * _bcr_params["opex_rate"]
+                test_monthly = (test_ann_div / 12.0) + (test_ann_opex / 12.0)
+
+                for mkey, mr in _bcr_models.items():
+                    monthly_px = mr["monthly_prices"]
+                    n_s = mr["n_sims"]
+                    n_m = mr["n_months"]
+                    n_fail = 0
+                    min_bcrs = np.zeros(n_s)
+
+                    for i in range(n_s):
+                        btc_h = _bcr_params["nav"] / _init_px
+                        cash_h = _bcr_params["cash_months"] * test_monthly
+                        path_min_bcr = float("inf")
+                        path_failed = False
+
+                        for m in range(n_m):
+                            price = monthly_px[i, m]
+                            btc_obl = test_monthly * _bcr_params["btc_fraction"]
+                            if cash_h >= btc_obl:
+                                cash_h -= btc_obl
+                            else:
+                                sell_amt = btc_obl - cash_h
+                                cash_h = 0.0
+                                if price > 0:
+                                    btc_h -= sell_amt / price
+                            btc_val = btc_h * price
+                            cur_bcr = btc_val / test_ann_div if test_ann_div > 0 else float("inf")
+                            if cur_bcr < path_min_bcr:
+                                path_min_bcr = cur_bcr
+                            if not path_failed and cur_bcr < 1.0:
+                                path_failed = True
+
+                        if path_failed:
+                            n_fail += 1
+                        min_bcrs[i] = path_min_bcr
+
+                    _sens_pd[mkey].append(n_fail / n_s * 100)
+                    _sens_p5[mkey].append(float(np.percentile(min_bcrs, 5)))
+
+            # Chart 1 — PD vs BCR
+            fig_pd = go.Figure()
+            for mkey in ["rbb", "garch", "gbm"]:
+                if mkey not in _sens_pd:
+                    continue
+                fig_pd.add_trace(go.Scatter(
+                    x=_sens_bcrs, y=_sens_pd[mkey], mode="lines+markers",
+                    line=dict(color=_BCR_MODEL_COLORS[mkey], width=2.5 if mkey == "rbb" else 2),
+                    marker=dict(size=6), name=_BCR_MODEL_LABELS[mkey],
+                ))
+            fig_pd.update_layout(
+                title="Probability of Default vs Starting BCR",
+                xaxis_title="Starting BCR",
+                yaxis_title="Probability of Default (%)",
+                height=500, **PLOTLY_LAYOUT,
+            )
+            st.plotly_chart(fig_pd, use_container_width=True)
+
+            # Chart 2 — P5 Min BCR Stress Profile
+            _bcr_layout2 = {k: v for k, v in PLOTLY_LAYOUT.items() if k != "yaxis"}
+            fig_stress = go.Figure()
+            for mkey in ["rbb", "garch", "gbm"]:
+                if mkey not in _sens_p5:
+                    continue
+                fig_stress.add_trace(go.Scatter(
+                    x=_sens_bcrs, y=_sens_p5[mkey], mode="lines+markers",
+                    line=dict(color=_BCR_MODEL_COLORS[mkey], width=2.5 if mkey == "rbb" else 2),
+                    marker=dict(size=6), name=_BCR_MODEL_LABELS[mkey],
+                ))
+            fig_stress.add_hline(
+                y=1.0, line_dash="dash", line_color=RED, line_width=2,
+                annotation_text="BCR = 1 (Failure)", annotation_font_color=RED,
+            )
+            fig_stress.update_layout(
+                title="5th Percentile Minimum BCR vs Starting BCR",
+                xaxis_title="Starting BCR",
+                yaxis=dict(title="P5 Minimum BCR Reached", gridcolor=GRID, zerolinecolor=GRID,
+                           tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc")),
+                height=500, **_bcr_layout2,
+            )
+            st.plotly_chart(fig_stress, use_container_width=True)
+
             # ── What This Means ────────────────────────────────────────
             _rbb_mr = _bcr_models["rbb"]
             _rbb_fail_pct = int(np.sum(_rbb_mr["failed"])) / _rbb_mr["n_sims"] * 100
