@@ -4743,10 +4743,39 @@ with tab_prod:
         },
     }
 
+    # ── Auto-load persisted results on first visit ───────────────────
+    if "prod_all" not in st.session_state:
+        _saved_path = Path("results/production_sim.json.gz")
+        if _saved_path.exists():
+            import gzip as _gzip
+            with _gzip.open(_saved_path, "rt", encoding="utf-8") as _f:
+                _saved = json.load(_f)
+            st.session_state["prod_all"] = {
+                "initial_price": _saved["initial_price"],
+                "data_end_date": _saved["data_end_date"],
+                "n_training_days": _saved["n_training_days"],
+                "models": _saved["models"],
+                "rbb_paths": np.array(_saved["rbb_paths"]),
+            }
+            # Also populate prod_sim for Executive Summary backward compat
+            _rbb_m = _saved["models"]["rbb"]
+            st.session_state["prod_sim"] = {
+                "initial_price": _saved["initial_price"],
+                "data_end_date": _saved["data_end_date"],
+                "n_training_days": _saved["n_training_days"],
+                "model_meta": {"model_name": "regime_block_bootstrap",
+                               "label": "RBB (Block Bootstrap)",
+                               "specs": "Loaded from saved results"},
+                "p5": _rbb_m["p5"], "p25": _rbb_m["p25"], "p50": _rbb_m["p50"],
+                "p75": _rbb_m["p75"], "p95": _rbb_m["p95"],
+                "final_prices": _rbb_m["final_prices"],
+                "tail_events": _rbb_m["tail_events"],
+            }
+
     try:
         _prod_get_model, _ProdLoader, _prod_get_px = load_prod_deps()
 
-        if st.button("Run All 3 Models", type="primary", key="run_prod_all"):
+        if st.button("Run All 3 Models (re-simulate)", type="primary", key="run_prod_all"):
             loader = _ProdLoader()
             full_df = loader.load_processed_data()
             all_returns = full_df["log_return"].values
@@ -4828,21 +4857,23 @@ with tab_prod:
                                 "dur_365d": {"count": dur_365, "pct": round(dur_365 / n_sims * 100, 1)},
                             },
                             "named_scenarios": {
-                                "2014_mt_gox": {"count": crash_2014, "pct": round(crash_2014 / n_sims * 100, 2)},
-                                "2018_crash": {"count": crash_2018, "pct": round(crash_2018 / n_sims * 100, 2)},
-                                "2022_crash": {"count": crash_2022, "pct": round(crash_2022 / n_sims * 100, 2)},
-                                "2020_flash_crash": {"count": crash_2020, "pct": round(crash_2020 / n_sims * 100, 2)},
+                                "2014_mt_gox": {"desc": "DD >= 85%, duration >= 13mo", "count": crash_2014, "pct": round(crash_2014 / n_sims * 100, 2)},
+                                "2018_crash": {"desc": "DD >= 84%, duration >= 12mo", "count": crash_2018, "pct": round(crash_2018 / n_sims * 100, 2)},
+                                "2022_crash": {"desc": "DD >= 77%, duration >= 13mo", "count": crash_2022, "pct": round(crash_2022 / n_sims * 100, 2)},
+                                "2020_flash_crash": {"desc": "DD >= 50% within 30d", "count": crash_2020, "pct": round(crash_2020 / n_sims * 100, 2)},
                             },
                         },
                     }
 
-            st.session_state["prod_all"] = {
+            _prod_all_data = {
                 "initial_price": initial_price,
                 "data_end_date": data_end_date,
                 "n_training_days": n_training_days,
                 "models": {k: {kk: vv for kk, vv in v.items() if kk != "paths"} for k, v in all_model_results.items()},
                 "rbb_paths": all_model_results["rbb"]["paths"],
             }
+            st.session_state["prod_all"] = _prod_all_data
+
             # Keep backward compat with single-model session state
             rbb = all_model_results["rbb"]
             st.session_state["prod_sim"] = {
@@ -4854,6 +4885,21 @@ with tab_prod:
                 "p75": rbb["p75"], "p95": rbb["p95"],
                 "final_prices": rbb["final_prices"], "tail_events": rbb["tail_events"],
             }
+
+            # ── Persist to disk ────────────────────────────────────────
+            import gzip as _gzip
+            _save_data = {
+                "initial_price": initial_price,
+                "data_end_date": data_end_date,
+                "n_training_days": n_training_days,
+                "models": _prod_all_data["models"],
+                "rbb_paths": all_model_results["rbb"]["paths"].tolist(),
+            }
+            _save_path = Path("results/production_sim.json.gz")
+            _save_path.parent.mkdir(parents=True, exist_ok=True)
+            with _gzip.open(_save_path, "wt", encoding="utf-8") as _f:
+                json.dump(_save_data, _f, separators=(",", ":"))
+            st.toast("Results saved to results/production_sim.json.gz")
 
         # ── Render 3-Model Comparison ──────────────────────────────────
         _prod_all = st.session_state.get("prod_all")
