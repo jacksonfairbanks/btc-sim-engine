@@ -4750,12 +4750,17 @@ with tab_prod:
             import gzip as _gzip
             with _gzip.open(_saved_path, "rt", encoding="utf-8") as _f:
                 _saved = json.load(_f)
+            # Handle both old format (rbb_paths) and new format (all_paths)
+            if "all_paths" in _saved:
+                _loaded_paths = {k: np.array(v) for k, v in _saved["all_paths"].items()}
+            else:
+                _loaded_paths = {"rbb": np.array(_saved["rbb_paths"])}
             st.session_state["prod_all"] = {
                 "initial_price": _saved["initial_price"],
                 "data_end_date": _saved["data_end_date"],
                 "n_training_days": _saved["n_training_days"],
                 "models": _saved["models"],
-                "rbb_paths": np.array(_saved["rbb_paths"]),
+                "all_paths": _loaded_paths,
             }
             # Also populate prod_sim for Executive Summary backward compat
             _rbb_m = _saved["models"]["rbb"]
@@ -4870,7 +4875,7 @@ with tab_prod:
                 "data_end_date": data_end_date,
                 "n_training_days": n_training_days,
                 "models": {k: {kk: vv for kk, vv in v.items() if kk != "paths"} for k, v in all_model_results.items()},
-                "rbb_paths": all_model_results["rbb"]["paths"],
+                "all_paths": {k: all_model_results[k]["paths"] for k in all_model_results},
             }
             st.session_state["prod_all"] = _prod_all_data
 
@@ -4893,7 +4898,7 @@ with tab_prod:
                 "data_end_date": data_end_date,
                 "n_training_days": n_training_days,
                 "models": _prod_all_data["models"],
-                "rbb_paths": all_model_results["rbb"]["paths"].tolist(),
+                "all_paths": {k: v.tolist() for k, v in _prod_all_data["all_paths"].items()},
             }
             _save_path = Path("results/production_sim.json.gz")
             _save_path.parent.mkdir(parents=True, exist_ok=True)
@@ -5055,78 +5060,83 @@ with tab_bcr:
     # ── Run BCR Analysis ───────────────────────────────────────────────
     _prod_all = st.session_state.get("prod_all")
     if _prod_all is None:
-        st.warning("Run **Production Simulation** (All 3 Models) first to generate RBB price paths.")
+        st.warning("Run **Production Simulation** (All 3 Models) first to generate price paths.")
     else:
         initial_price = _prod_all["initial_price"]
         data_end = _prod_all["data_end_date"]
         start_ts = pd.Timestamp(data_end) + pd.Timedelta(days=1)
-        rbb_paths = _prod_all.get("rbb_paths")
+        _all_paths = _prod_all.get("all_paths", {})
 
-        if rbb_paths is None:
-            st.warning("RBB paths not available. Re-run Production Simulation.")
+        if not _all_paths:
+            st.warning("Price paths not available. Re-run Production Simulation.")
         elif st.button("Run BCR Analysis", type="primary", key="run_bcr"):
-            with st.spinner("Running solvency simulation across all paths..."):
-                n_sims_bcr = rbb_paths.shape[0]
-                n_days = rbb_paths.shape[1]
-                n_months = n_days // 30
+            with st.spinner("Running solvency simulation across all 3 models..."):
+                _bcr_model_results = {}
+                for mkey, m_paths in _all_paths.items():
+                    n_sims_bcr = m_paths.shape[0]
+                    n_days = m_paths.shape[1]
+                    n_months = n_days // 30
 
-                month_indices = [min(30 * (m + 1) - 1, n_days - 1) for m in range(n_months)]
-                monthly_prices = rbb_paths[:, month_indices]
+                    month_indices = [min(30 * (m + 1) - 1, n_days - 1) for m in range(n_months)]
+                    monthly_prices = m_paths[:, month_indices]
 
-                all_bcr_series = np.zeros((n_sims_bcr, n_months))
-                failed = np.zeros(n_sims_bcr, dtype=bool)
-                failure_month = np.full(n_sims_bcr, n_months + 1, dtype=int)
-                min_bcr_arr = np.zeros(n_sims_bcr)
-                terminal_bcr_arr = np.zeros(n_sims_bcr)
+                    all_bcr_series = np.zeros((n_sims_bcr, n_months))
+                    failed = np.zeros(n_sims_bcr, dtype=bool)
+                    failure_month = np.full(n_sims_bcr, n_months + 1, dtype=int)
+                    min_bcr_arr = np.zeros(n_sims_bcr)
+                    terminal_bcr_arr = np.zeros(n_sims_bcr)
 
-                for i in range(n_sims_bcr):
-                    btc_holdings = bcr_nav / initial_price
-                    cash = bcr_cash_months * _bcr_monthly_obligation
-                    path_failed = False
+                    for i in range(n_sims_bcr):
+                        btc_holdings = bcr_nav / initial_price
+                        cash = bcr_cash_months * _bcr_monthly_obligation
+                        path_failed = False
 
-                    for m in range(n_months):
-                        price = monthly_prices[i, m]
-                        btc_obligation = _bcr_monthly_obligation * bcr_btc_fraction
+                        for m in range(n_months):
+                            price = monthly_prices[i, m]
+                            btc_obligation = _bcr_monthly_obligation * bcr_btc_fraction
 
-                        if cash >= btc_obligation:
-                            cash -= btc_obligation
-                        else:
-                            btc_sell_amount = btc_obligation - cash
-                            cash = 0.0
-                            if price > 0:
-                                btc_holdings -= btc_sell_amount / price
-
-                        btc_value = btc_holdings * price
-                        current_bcr = btc_value / _bcr_annual_dividend if _bcr_annual_dividend > 0 else float("inf")
-                        all_bcr_series[i, m] = current_bcr
-
-                        if not path_failed:
-                            if bcr_fail_mode == "BCR < 1":
-                                if current_bcr < 1.0:
-                                    path_failed = True
-                                    failure_month[i] = m + 1
+                            if cash >= btc_obligation:
+                                cash -= btc_obligation
                             else:
-                                if btc_value < _bcr_ppe_notional:
-                                    path_failed = True
-                                    failure_month[i] = m + 1
+                                btc_sell_amount = btc_obligation - cash
+                                cash = 0.0
+                                if price > 0:
+                                    btc_holdings -= btc_sell_amount / price
 
-                    failed[i] = path_failed
-                    min_bcr_arr[i] = np.min(all_bcr_series[i, :])
-                    terminal_bcr_arr[i] = all_bcr_series[i, -1]
+                            btc_value = btc_holdings * price
+                            current_bcr = btc_value / _bcr_annual_dividend if _bcr_annual_dividend > 0 else float("inf")
+                            all_bcr_series[i, m] = current_bcr
 
-                # Store results
+                            if not path_failed:
+                                if bcr_fail_mode == "BCR < 1":
+                                    if current_bcr < 1.0:
+                                        path_failed = True
+                                        failure_month[i] = m + 1
+                                else:
+                                    if btc_value < _bcr_ppe_notional:
+                                        path_failed = True
+                                        failure_month[i] = m + 1
+
+                        failed[i] = path_failed
+                        min_bcr_arr[i] = np.min(all_bcr_series[i, :])
+                        terminal_bcr_arr[i] = all_bcr_series[i, -1]
+
+                    _bcr_model_results[mkey] = {
+                        "all_bcr_series": all_bcr_series,
+                        "failed": failed,
+                        "failure_month": failure_month,
+                        "min_bcr": min_bcr_arr,
+                        "terminal_bcr": terminal_bcr_arr,
+                        "n_sims": n_sims_bcr,
+                        "n_months": n_months,
+                        "monthly_prices": monthly_prices,
+                    }
+
                 st.session_state["bcr_results"] = {
-                    "all_bcr_series": all_bcr_series,
-                    "failed": failed,
-                    "failure_month": failure_month,
-                    "min_bcr": min_bcr_arr,
-                    "terminal_bcr": terminal_bcr_arr,
-                    "n_sims": n_sims_bcr,
-                    "n_months": n_months,
+                    "models": _bcr_model_results,
                     "initial_price": initial_price,
                     "start_ts": start_ts,
-                    "monthly_prices": monthly_prices,
-                    # Snapshot params used
+                    "n_months": n_months,
                     "params": {
                         "nav": bcr_nav, "bcr": bcr_ratio, "div_rate": bcr_div_rate,
                         "cash_months": bcr_cash_months, "btc_fraction": bcr_btc_fraction,
@@ -5139,54 +5149,75 @@ with tab_bcr:
         # ── Render BCR Results ─────────────────────────────────────────
         _bcr_res = st.session_state.get("bcr_results")
         if _bcr_res:
-            all_bcr_series = _bcr_res["all_bcr_series"]
-            failed = _bcr_res["failed"]
-            failure_month = _bcr_res["failure_month"]
-            min_bcr_arr = _bcr_res["min_bcr"]
-            terminal_bcr_arr = _bcr_res["terminal_bcr"]
-            n_sims_bcr = _bcr_res["n_sims"]
+            _bcr_models = _bcr_res["models"]
             n_months = _bcr_res["n_months"]
             _bcr_start_ts = _bcr_res["start_ts"]
             _bcr_params = _bcr_res["params"]
-            monthly_prices = _bcr_res["monthly_prices"]
+            _init_px = _bcr_res["initial_price"]
 
-            # ── HERO CHART: BCR Fan Chart ──────────────────────────────
-            st.subheader("BCR Trajectory — Percentile Bands")
-            bcr_p5 = np.percentile(all_bcr_series, 5, axis=0)
-            bcr_p25 = np.percentile(all_bcr_series, 25, axis=0)
-            bcr_p50 = np.median(all_bcr_series, axis=0)
-            bcr_p75 = np.percentile(all_bcr_series, 75, axis=0)
-            bcr_p95 = np.percentile(all_bcr_series, 95, axis=0)
-
+            _BCR_MODEL_COLORS = {"rbb": BTC_ORANGE, "garch": BLUE, "gbm": TEXT_DIM}
+            _BCR_MODEL_LABELS = {"rbb": "RBB (Block Bootstrap)", "garch": "GARCH(1,1)", "gbm": "GBM (Baseline)"}
             month_dates = [_bcr_start_ts + pd.Timedelta(days=30 * (m + 1)) for m in range(n_months)]
 
+            # ── HERO CHART: 3-Model BCR Percentile Fan Chart ───────────
+            st.subheader("BCR Trajectory — 3-Model Percentile Comparison")
+
             fig_bcr = go.Figure()
+
+            # RBB gets the filled CI envelope (reference model)
+            rbb_bcr = _bcr_models["rbb"]["all_bcr_series"]
+            rbb_p5 = np.percentile(rbb_bcr, 5, axis=0)
+            rbb_p25 = np.percentile(rbb_bcr, 25, axis=0)
+            rbb_p75 = np.percentile(rbb_bcr, 75, axis=0)
+            rbb_p95 = np.percentile(rbb_bcr, 95, axis=0)
+
             fig_bcr.add_trace(go.Scatter(
                 x=month_dates + month_dates[::-1],
-                y=bcr_p5.tolist() + bcr_p95.tolist()[::-1],
-                fill="toself", fillcolor="rgba(247,147,26,0.08)",
-                line=dict(color="rgba(0,0,0,0)"), name="90% CI (P5-P95)",
+                y=rbb_p5.tolist() + rbb_p95.tolist()[::-1],
+                fill="toself", fillcolor="rgba(247,147,26,0.06)",
+                line=dict(color="rgba(0,0,0,0)"), name="RBB 90% CI",
             ))
             fig_bcr.add_trace(go.Scatter(
                 x=month_dates + month_dates[::-1],
-                y=bcr_p25.tolist() + bcr_p75.tolist()[::-1],
-                fill="toself", fillcolor="rgba(247,147,26,0.20)",
-                line=dict(color="rgba(0,0,0,0)"), name="50% CI (P25-P75)",
+                y=rbb_p25.tolist() + rbb_p75.tolist()[::-1],
+                fill="toself", fillcolor="rgba(247,147,26,0.15)",
+                line=dict(color="rgba(0,0,0,0)"), name="RBB 50% CI",
             ))
-            fig_bcr.add_trace(go.Scatter(
-                x=month_dates, y=bcr_p50.tolist(), mode="lines",
-                line=dict(color=BTC_ORANGE, width=2.5), name="Median BCR",
-            ))
+
+            # Median + P5 lines for all 3 models
+            for mkey in ["rbb", "garch", "gbm"]:
+                if mkey not in _bcr_models:
+                    continue
+                bcr_series = _bcr_models[mkey]["all_bcr_series"]
+                m_p5 = np.percentile(bcr_series, 5, axis=0)
+                m_p50 = np.median(bcr_series, axis=0)
+                color = _BCR_MODEL_COLORS[mkey]
+                label = _BCR_MODEL_LABELS[mkey]
+                is_rbb = mkey == "rbb"
+
+                fig_bcr.add_trace(go.Scatter(
+                    x=month_dates, y=m_p50.tolist(), mode="lines",
+                    line=dict(color=color, width=2.5 if is_rbb else 2,
+                              dash="solid" if is_rbb else "dash"),
+                    name=f"{label} Median",
+                ))
+                fig_bcr.add_trace(go.Scatter(
+                    x=month_dates, y=m_p5.tolist(), mode="lines",
+                    line=dict(color=color, width=1, dash="dot"),
+                    name=f"{label} P5",
+                ))
+
+            # Failure threshold
             fig_bcr.add_hline(
                 y=1.0, line_dash="dash", line_color=RED, line_width=2,
                 annotation_text="BCR = 1 (Failure Threshold)",
                 annotation_font_color=RED, annotation_font_size=12,
             )
-            y_max = min(float(np.percentile(bcr_p95, 95)) * 1.2, float(bcr_p95.max()) * 1.1)
+            y_max = min(float(np.percentile(rbb_p95, 95)) * 1.2, float(rbb_p95.max()) * 1.1)
             y_max = max(y_max, _bcr_params["bcr"] * 1.5)
             _bcr_layout = {k: v for k, v in PLOTLY_LAYOUT.items() if k != "yaxis"}
             fig_bcr.update_layout(
-                title=f"Bitcoin Coverage Ratio Over {n_months} Months — {n_sims_bcr:,} Paths",
+                title=f"Bitcoin Coverage Ratio — All Models ({n_months} Months, {_bcr_models['rbb']['n_sims']:,} Paths Each)",
                 xaxis_title="", yaxis_title="BCR (BTC Value / Annual Dividend)",
                 yaxis=dict(range=[0, y_max], gridcolor=GRID, zerolinecolor=GRID,
                            tickfont=dict(color="#bbbbbb"), title=dict(font=dict(color="#cccccc"))),
@@ -5194,79 +5225,86 @@ with tab_bcr:
             )
             st.plotly_chart(fig_bcr, use_container_width=True)
 
-            # ── Summary Metrics ────────────────────────────────────────
-            n_failed = int(np.sum(failed))
-            fail_pct = n_failed / n_sims_bcr * 100
+            # ── Summary Table — All 3 Models ───────────────────────────
+            st.subheader("Solvency Summary — All Models")
+            _summary_rows = []
+            for mkey in ["rbb", "garch", "gbm"]:
+                if mkey not in _bcr_models:
+                    continue
+                mr = _bcr_models[mkey]
+                n_f = int(np.sum(mr["failed"]))
+                n_s = mr["n_sims"]
+                _summary_rows.append({
+                    "Model": _BCR_MODEL_LABELS[mkey],
+                    "Failure %": f"{n_f / n_s * 100:.1f}%",
+                    "Failed Paths": f"{n_f:,} / {n_s:,}",
+                    "Median Terminal BCR": f"{np.median(mr['terminal_bcr']):.1f}x",
+                    "P5 Terminal BCR": f"{np.percentile(mr['terminal_bcr'], 5):.1f}x",
+                    "P5 Min BCR": f"{np.percentile(mr['min_bcr'], 5):.2f}x",
+                    "Median Min BCR": f"{np.median(mr['min_bcr']):.1f}x",
+                })
+            st.table(pd.DataFrame(_summary_rows).set_index("Model"))
 
-            sm1, sm2, sm3, sm4, sm5 = st.columns(5)
-            sm1.metric("Failure Probability", f"{fail_pct:.1f}%",
-                       delta=f"{n_failed:,} / {n_sims_bcr:,} paths", delta_color="inverse")
-            sm2.metric("Median Terminal BCR", f"{np.median(terminal_bcr_arr):.1f}x")
-            sm3.metric("P5 Terminal BCR", f"{np.percentile(terminal_bcr_arr, 5):.1f}x")
-            sm4.metric("P95 Terminal BCR", f"{np.percentile(terminal_bcr_arr, 95):.1f}x")
-            _init_px = _bcr_res["initial_price"]
+            # Runway metric
             monthly_btc_drain = (_bcr_params["monthly_obligation"] * _bcr_params["btc_fraction"]) / _init_px if _init_px > 0 else 0
             starting_btc = _bcr_params["nav"] / _init_px
             runway_months = int(starting_btc / monthly_btc_drain) if monthly_btc_drain > 0 else 999
-            sm5.metric("Months of Runway", f"{runway_months}",
-                       delta="at constant price", delta_color="off")
+            st.metric("Months of Runway (at constant price)", f"{runway_months}")
 
-            # ── Min BCR Distribution ───────────────────────────────────
+            # ── Min BCR Distribution — All 3 Models ────────────────────
             st.subheader("Minimum BCR Distribution")
-            bcr_col1, bcr_col2 = st.columns(2)
-
-            with bcr_col1:
-                fig_min_hist = go.Figure()
-                min_bcr_display = np.clip(min_bcr_arr, 0, np.percentile(min_bcr_arr, 99))
+            fig_min_hist = go.Figure()
+            for mkey in ["rbb", "garch", "gbm"]:
+                if mkey not in _bcr_models:
+                    continue
+                mr = _bcr_models[mkey]
+                min_bcr_display = np.clip(mr["min_bcr"], 0, np.percentile(mr["min_bcr"], 99))
                 fig_min_hist.add_trace(go.Histogram(
-                    x=min_bcr_display, nbinsx=60,
-                    marker_color=BTC_ORANGE, opacity=0.7,
+                    x=min_bcr_display, nbinsx=60, name=_BCR_MODEL_LABELS[mkey],
+                    marker_color=_BCR_MODEL_COLORS[mkey], opacity=0.5,
                 ))
-                fig_min_hist.add_vline(x=1.0, line_dash="dash", line_color=RED, line_width=2,
-                                       annotation_text="BCR=1", annotation_font_color=RED)
-                fig_min_hist.update_layout(
-                    title="Min BCR Reached Per Path", xaxis_title="Minimum BCR",
-                    yaxis_title="Count", height=400, **PLOTLY_LAYOUT,
-                )
-                st.plotly_chart(fig_min_hist, use_container_width=True)
+            fig_min_hist.add_vline(x=1.0, line_dash="dash", line_color=RED, line_width=2,
+                                   annotation_text="BCR=1", annotation_font_color=RED)
+            fig_min_hist.update_layout(
+                title="Min BCR Reached Per Path — All Models",
+                xaxis_title="Minimum BCR", yaxis_title="Count",
+                barmode="overlay", height=400, **PLOTLY_LAYOUT,
+            )
+            st.plotly_chart(fig_min_hist, use_container_width=True)
 
-            with bcr_col2:
-                min_bcr_pcts = [1, 5, 10, 25, 50, 75, 90, 95, 99]
-                pct_table = [{"Percentile": f"P{p}", "Min BCR": f"{np.percentile(min_bcr_arr, p):.2f}x"}
-                             for p in min_bcr_pcts]
-                pct_table.append({"Percentile": "% Below 1x", "Min BCR": f"{float(np.mean(min_bcr_arr < 1)) * 100:.1f}%"})
-                pct_table.append({"Percentile": "% Below 5x", "Min BCR": f"{float(np.mean(min_bcr_arr < 5)) * 100:.1f}%"})
-                pct_table.append({"Percentile": "% Below 10x", "Min BCR": f"{float(np.mean(min_bcr_arr < 10)) * 100:.1f}%"})
-                st.table(pd.DataFrame(pct_table).set_index("Percentile"))
-
-            # ── Cumulative Failure Curve ────────────────────────────────
+            # ── Cumulative Failure Curve — All 3 Models ────────────────
             st.subheader("Cumulative Failure Probability by Month")
-            cum_fail = np.zeros(n_months)
-            for m in range(n_months):
-                cum_fail[m] = float(np.sum(failure_month <= (m + 1))) / n_sims_bcr * 100
-
             fig_cum = go.Figure()
-            fig_cum.add_trace(go.Scatter(
-                x=list(range(1, n_months + 1)), y=cum_fail.tolist(),
-                mode="lines+markers", line=dict(color=RED, width=2),
-                marker=dict(size=4), name="Cumulative Failure %",
-            ))
+            for mkey in ["rbb", "garch", "gbm"]:
+                if mkey not in _bcr_models:
+                    continue
+                mr = _bcr_models[mkey]
+                cum_fail = np.zeros(n_months)
+                for m in range(n_months):
+                    cum_fail[m] = float(np.sum(mr["failure_month"] <= (m + 1))) / mr["n_sims"] * 100
+                fig_cum.add_trace(go.Scatter(
+                    x=list(range(1, n_months + 1)), y=cum_fail.tolist(),
+                    mode="lines", line=dict(color=_BCR_MODEL_COLORS[mkey], width=2),
+                    name=_BCR_MODEL_LABELS[mkey],
+                ))
             fig_cum.update_layout(
-                title="Probability of Having Failed by Month X",
+                title="Probability of Having Failed by Month X — All Models",
                 xaxis_title="Month", yaxis_title="Cumulative Failure (%)",
                 height=400, **PLOTLY_LAYOUT,
             )
             st.plotly_chart(fig_cum, use_container_width=True)
 
-            # ── Sensitivity Heatmap ────────────────────────────────────
-            st.subheader("Sensitivity Heatmap — Failure Probability")
+            # ── Sensitivity Heatmap (RBB only — production model) ──────
+            st.subheader("Sensitivity Heatmap — Failure Probability (RBB)")
             st.markdown(
                 f"<span style='color:{TEXT_DIM};font-size:0.85rem;'>"
                 f"Failure probability across BCR x Dividend Rate combinations. "
-                f"Uses the same {n_sims_bcr:,} RBB price paths.</span>",
+                f"Uses RBB price paths (production model).</span>",
                 unsafe_allow_html=True,
             )
 
+            rbb_monthly = _bcr_models["rbb"]["monthly_prices"]
+            n_sims_heat = _bcr_models["rbb"]["n_sims"]
             _heat_bcrs = [10, 20, 30, 40, 50, 60, 80, 100]
             _heat_divs = [0.05, 0.08, 0.10, 0.12, 0.15]
             _heat_z = np.zeros((len(_heat_divs), len(_heat_bcrs)))
@@ -5280,12 +5318,12 @@ with tab_bcr:
                     h_monthly = (h_ann_div / 12.0) + (h_ann_opex / 12.0)
 
                     n_fail = 0
-                    for i in range(n_sims_bcr):
+                    for i in range(n_sims_heat):
                         btc_h = _bcr_params["nav"] / _init_px
                         cash_h = _bcr_params["cash_months"] * h_monthly
                         path_ok = True
                         for m in range(n_months):
-                            price = monthly_prices[i, m]
+                            price = rbb_monthly[i, m]
                             btc_obl = h_monthly * _bcr_params["btc_fraction"]
                             if cash_h >= btc_obl:
                                 cash_h -= btc_obl
@@ -5306,7 +5344,7 @@ with tab_bcr:
                                     break
                         if not path_ok:
                             n_fail += 1
-                    _heat_z[di, bi] = n_fail / n_sims_bcr * 100
+                    _heat_z[di, bi] = n_fail / n_sims_heat * 100
 
             fig_heat = go.Figure(data=go.Heatmap(
                 z=_heat_z,
@@ -5330,6 +5368,8 @@ with tab_bcr:
             st.plotly_chart(fig_heat, use_container_width=True)
 
             # ── What This Means ────────────────────────────────────────
+            _rbb_mr = _bcr_models["rbb"]
+            _rbb_fail_pct = int(np.sum(_rbb_mr["failed"])) / _rbb_mr["n_sims"] * 100
             st.markdown(
                 f"<div style='background:{PANEL};border-left:3px solid {BTC_ORANGE};"
                 f"border-radius:4px;padding:14px;margin-top:12px;'>"
@@ -5342,16 +5382,13 @@ with tab_bcr:
                 f"<ul style='color:{TEXT};font-size:0.82rem;margin:8px 0;padding-left:20px;'>"
                 f"<li>PPE issuance: <b>${_bcr_params['ppe_notional']:,.0f}</b> notional, "
                 f"paying <b>${_bcr_params['annual_dividend']:,.0f}/yr</b> in dividends</li>"
-                f"<li><b>{fail_pct:.1f}%</b> of {n_sims_bcr:,} simulated 4-year paths result in "
-                f"{'BCR falling below 1' if _bcr_params['fail_mode'] == 'BCR < 1' else 'NAV falling below PPE notional'}</li>"
-                f"<li>Median terminal BCR: <b>{np.median(terminal_bcr_arr):.1f}x</b> | "
-                f"5th percentile: <b>{np.percentile(terminal_bcr_arr, 5):.1f}x</b></li>"
-                f"<li>At constant BTC price, the treasury has <b>{runway_months} months</b> of runway "
-                f"before BTC holdings are fully depleted by dividend payments</li>"
+                f"<li>RBB (production model): <b>{_rbb_fail_pct:.1f}%</b> failure rate | "
+                f"Median terminal BCR: <b>{np.median(_rbb_mr['terminal_bcr']):.1f}x</b></li>"
+                f"<li>At constant BTC price, the treasury has <b>{runway_months} months</b> of runway</li>"
                 f"</ul>"
                 f"<span style='color:{TEXT_DIM};font-size:0.78rem;font-style:italic;'>"
-                f"Solvency analysis uses RBB price paths (walk-forward score 0.8109). "
-                f"Cash flows are deterministic given price — no additional randomness."
+                f"BCR comparison across models shows how different price path assumptions "
+                f"affect solvency outcomes. RBB paths are the most realistic (walk-forward 0.8109)."
                 f"</span></div>",
                 unsafe_allow_html=True,
             )
