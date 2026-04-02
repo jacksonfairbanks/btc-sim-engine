@@ -5171,6 +5171,18 @@ with tab_bcr:
             _pct_range = list(range(1, 100))
             fig_bcr_curve = go.Figure()
 
+            # Red failure zone below BCR = 1
+            fig_bcr_curve.add_hrect(
+                y0=0, y1=1.0,
+                fillcolor="rgba(239,68,68,0.10)", line_width=0,
+                annotation_text="FAILURE ZONE", annotation_position="top left",
+                annotation_font=dict(color=RED, size=11),
+            )
+            fig_bcr_curve.add_hline(
+                y=1.0, line_dash="dash", line_color=RED, line_width=2,
+            )
+
+            # Plot each model's curve and annotate failure %
             for mkey in ["rbb", "garch", "gbm"]:
                 if mkey not in _bcr_models:
                     continue
@@ -5180,76 +5192,51 @@ with tab_bcr:
 
                 fig_bcr_curve.add_trace(go.Scatter(
                     x=_pct_range, y=y_vals.tolist(), mode="lines",
-                    line=dict(color=_BCR_MODEL_COLORS[mkey], width=2.5 if mkey == "rbb" else 2),
+                    line=dict(color=_BCR_MODEL_COLORS[mkey], width=3 if mkey == "rbb" else 2),
                     name=_BCR_MODEL_LABELS[mkey],
                 ))
 
-            # Failure threshold
-            fig_bcr_curve.add_hline(
-                y=1.0, line_dash="dash", line_color=RED, line_width=2,
-                annotation_text="BCR = 1 (Failure Threshold)",
-                annotation_font_color=RED, annotation_font_size=12,
-                annotation_position="top left",
-            )
+                # Find failure percentile (where curve crosses BCR = 1)
+                fail_pct = float(np.mean(data_arr < 1.0)) * 100
+                if fail_pct > 0.01:
+                    # Find the x position where y crosses 1.0
+                    cross_x = fail_pct
+                    _y_offsets = {"rbb": 1.8, "garch": 2.5, "gbm": 3.5}
+                    fig_bcr_curve.add_annotation(
+                        x=max(cross_x, 2), y=_y_offsets.get(mkey, 2.0),
+                        text=f"<b>{_BCR_MODEL_LABELS[mkey]}: {fail_pct:.1f}% fail</b>",
+                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.5,
+                        arrowcolor=_BCR_MODEL_COLORS[mkey],
+                        ax=40, ay=-25,
+                        font=dict(color=_BCR_MODEL_COLORS[mkey], size=11),
+                        bgcolor="rgba(10,10,10,0.8)", bordercolor=_BCR_MODEL_COLORS[mkey],
+                        borderwidth=1, borderpad=4,
+                    )
+                else:
+                    # No failures — annotate at bottom-left
+                    fig_bcr_curve.add_annotation(
+                        x=3, y=0.5,
+                        text=f"<b>{_BCR_MODEL_LABELS[mkey]}: 0% fail</b>",
+                        showarrow=False,
+                        font=dict(color=_BCR_MODEL_COLORS[mkey], size=11),
+                        bgcolor="rgba(10,10,10,0.8)", bordercolor=_BCR_MODEL_COLORS[mkey],
+                        borderwidth=1, borderpad=4,
+                    )
 
             _bcr_layout = {k: v for k, v in PLOTLY_LAYOUT.items() if k not in ("yaxis", "xaxis")}
             _metric_label = "Terminal BCR" if _use_terminal else "Minimum BCR"
             fig_bcr_curve.update_layout(
                 title=f"{_metric_label} by Percentile — {_bcr_models['rbb']['n_sims']:,} Paths Per Model",
-                xaxis=dict(title="Percentile", gridcolor=GRID, zerolinecolor=GRID,
+                xaxis=dict(title="Percentile (sorted paths, worst to best)",
+                           gridcolor=GRID, zerolinecolor=GRID,
                            tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc"),
                            tickvals=[1, 5, 10, 25, 50, 75, 90, 95, 99],
                            range=[0, 100]),
                 yaxis=dict(title=_metric_label, type="log", gridcolor=GRID, zerolinecolor=GRID,
                            tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc")),
-                height=650, **_bcr_layout,
+                height=800, **_bcr_layout,
             )
             st.plotly_chart(fig_bcr_curve, use_container_width=True)
-
-            # ── BCR Time Series Fan Chart (secondary) ──────────────────
-            with st.expander("BCR Trajectory Over Time (Fan Chart)"):
-                rbb_bcr = _bcr_models["rbb"]["all_bcr_series"]
-                rbb_p5 = np.percentile(rbb_bcr, 5, axis=0)
-                rbb_p25 = np.percentile(rbb_bcr, 25, axis=0)
-                rbb_p50 = np.median(rbb_bcr, axis=0)
-                rbb_p75 = np.percentile(rbb_bcr, 75, axis=0)
-                rbb_p95 = np.percentile(rbb_bcr, 95, axis=0)
-
-                fig_bcr_ts = go.Figure()
-                fig_bcr_ts.add_trace(go.Scatter(
-                    x=month_dates + month_dates[::-1],
-                    y=rbb_p5.tolist() + rbb_p95.tolist()[::-1],
-                    fill="toself", fillcolor="rgba(247,147,26,0.06)",
-                    line=dict(color="rgba(0,0,0,0)"), name="RBB 90% CI",
-                ))
-                fig_bcr_ts.add_trace(go.Scatter(
-                    x=month_dates + month_dates[::-1],
-                    y=rbb_p25.tolist() + rbb_p75.tolist()[::-1],
-                    fill="toself", fillcolor="rgba(247,147,26,0.15)",
-                    line=dict(color="rgba(0,0,0,0)"), name="RBB 50% CI",
-                ))
-                for mkey in ["rbb", "garch", "gbm"]:
-                    if mkey not in _bcr_models:
-                        continue
-                    m_p50 = np.median(_bcr_models[mkey]["all_bcr_series"], axis=0)
-                    is_rbb = mkey == "rbb"
-                    fig_bcr_ts.add_trace(go.Scatter(
-                        x=month_dates, y=m_p50.tolist(), mode="lines",
-                        line=dict(color=_BCR_MODEL_COLORS[mkey], width=2.5 if is_rbb else 2,
-                                  dash="solid" if is_rbb else "dash"),
-                        name=f"{_BCR_MODEL_LABELS[mkey]} Median",
-                    ))
-                fig_bcr_ts.add_hline(y=1.0, line_dash="dash", line_color=RED, line_width=2)
-                y_max = max(float(rbb_p95.max()) * 1.1, _bcr_params["bcr"] * 1.5)
-                _ts_layout = {k: v for k, v in PLOTLY_LAYOUT.items() if k != "yaxis"}
-                fig_bcr_ts.update_layout(
-                    title=f"BCR Over Time — {n_months} Months",
-                    xaxis_title="", yaxis_title="BCR",
-                    yaxis=dict(range=[0, y_max], gridcolor=GRID, zerolinecolor=GRID,
-                               tickfont=dict(color="#bbbbbb"), title_font=dict(color="#cccccc")),
-                    height=500, **_ts_layout,
-                )
-                st.plotly_chart(fig_bcr_ts, use_container_width=True)
 
             # ── Summary Table — All 3 Models ───────────────────────────
             st.subheader("Solvency Summary — All Models")
