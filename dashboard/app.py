@@ -5387,7 +5387,7 @@ with tab_bcr:
                     texttemplate="%{text}",
                     textfont=dict(size=12, color="#ffffff"),
                     colorbar=dict(title="Fail %", tickfont=dict(color="#cccccc"),
-                                  titlefont=dict(color="#cccccc")),
+                                  title_font=dict(color="#cccccc")),
                     zmin=0, zmax=_heat_zmax,
                 ))
                 fig_heat.update_layout(
