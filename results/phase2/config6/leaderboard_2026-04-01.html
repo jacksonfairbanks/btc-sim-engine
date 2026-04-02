@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BTC Sim Engine — Leaderboard (2026-04-01)</title>
+<style>
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    padding: 2rem;
+  }
+  h1 {
+    color: #f7931a;
+    font-size: 1.4rem;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  th {
+    background: #1a1a1a;
+    color: #f7931a;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.8rem;
+    border-bottom: 2px solid #333;
+  }
+  td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #1a1a1a;
+    font-size: 0.8rem;
+  }
+  tr:hover {
+    background: #111111;
+  }
+  .footer {
+    margin-top: 2rem;
+    color: #666;
+    font-size: 0.7rem;
+  }
+</style>
+</head>
+<body>
+<h1>BTC Price Path Simulation — Leaderboard (2026-04-01)</h1>
+<table>
+<thead><tr><th>rank</th><th>model</th><th>horizon</th><th>composite_score</th><th>score_ks_statistic</th><th>score_qq_divergence</th><th>score_tail_index_accuracy</th><th>score_percentile_band_coverage</th><th>score_drawdown_duration_dist</th><th>score_recovery_time_dist</th><th>score_time_in_drawdown_ratio</th><th>score_vol_clustering_acf</th><th>score_mape</th><th>param_block_length_sampling</th><th>param_mean_block_length</th><th>param_min_block_length</th><th>param_block_stride</th><th>param_min_pool_size</th><th>param_regime_enabled</th><th>param_regime_method</th><th>param_n_regimes</th><th>param_transition_matrix_method</th><th>param_msm_variance_switching</th><th>param_msm_frequency</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>regime_block_bootstrap</td><td>730d</td><td>0.8222</td><td>0.9271</td><td>0.7489</td><td>0.9879</td><td>1.0000</td><td>0.8788</td><td>0.9010</td><td>0.9762</td><td>0.7731</td><td>0.8479</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>True</td><td>hmm_baum_welch</td><td>3</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>2</td><td>regime_block_bootstrap</td><td>365d</td><td>0.8186</td><td>0.8810</td><td>0.5759</td><td>0.8503</td><td>1.0000</td><td>0.8822</td><td>0.8496</td><td>0.9822</td><td>0.6481</td><td>0.8559</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>True</td><td>hmm_baum_welch</td><td>3</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>3</td><td>regime_block_bootstrap</td><td>180d</td><td>0.8081</td><td>0.9017</td><td>0.7657</td><td>0.7245</td><td>1.0000</td><td>0.7895</td><td>0.8134</td><td>0.9375</td><td>0.5969</td><td>0.8846</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>True</td><td>hmm_baum_welch</td><td>3</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>4</td><td>regime_block_bootstrap</td><td>1460d</td><td>0.8068</td><td>0.9209</td><td>0.7261</td><td>0.9425</td><td>1.0000</td><td>0.9291</td><td>0.9521</td><td>0.9922</td><td>0.8030</td><td>0.6538</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>True</td><td>hmm_baum_welch</td><td>3</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>5</td><td>gbm</td><td>365d</td><td>0.7705</td><td>0.8017</td><td>0.4484</td><td>0.3376</td><td>1.0000</td><td>0.8402</td><td>0.8570</td><td>0.9477</td><td>0.5592</td><td>0.8406</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>6</td><td>gbm</td><td>1460d</td><td>0.7625</td><td>0.8434</td><td>0.6180</td><td>0.5131</td><td>1.0000</td><td>0.9245</td><td>0.9456</td><td>0.9151</td><td>0.6812</td><td>0.6272</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>7</td><td>gbm</td><td>730d</td><td>0.7618</td><td>0.8278</td><td>0.6372</td><td>0.4473</td><td>1.0000</td><td>0.8620</td><td>0.9118</td><td>0.9025</td><td>0.6666</td><td>0.7098</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>8</td><td>gbm</td><td>180d</td><td>0.7589</td><td>0.7893</td><td>0.6421</td><td>0.2547</td><td>1.0000</td><td>0.7738</td><td>0.8128</td><td>0.8566</td><td>0.5364</td><td>0.8674</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+</tbody>
+</table>
+<div class="footer">@LongGamma — btc-sim-engine</div>
+</body>
+</html>

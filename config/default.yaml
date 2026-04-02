@@ -1,0 +1,110 @@
+experiment:
+  name: "baseline_run"
+  seed: 42
+  run_mode: "quick"  # "quick", "standard", or "full"
+
+# ──────────────────────────────────────────────────────────
+# Run Mode Defaults (override any field per-experiment)
+# ──────────────────────────────────────────────────────────
+#
+# QUICK — fast iteration, sanity-checking, debugging
+#   n_simulations_search: 500
+#   n_simulations_final: 2000
+#   search_phase: "sobol_only"
+#   trial_budgets: { gbm: 5, garch_1_1: 15, regime_block_bootstrap: 30 }
+#   horizons: [30d, 180d, 1460d]
+#   walk_forward_step_size: 180
+#   seeds: [42]
+#   ~150 total evaluations, minutes not hours
+#
+# STANDARD — development runs, comparing models meaningfully
+#   n_simulations_search: 1000
+#   n_simulations_final: 5000
+#   search_phase: "sobol_then_tpe"
+#   trial_budgets: { gbm: 30, garch_1_1: 80, regime_block_bootstrap: 150 }
+#   horizons: [30d, 90d, 180d, 365d, 1460d]
+#   walk_forward_step_size: 90
+#   seeds: [42]
+#   ~1,300 total evaluations
+#
+# FULL — production/publication-grade results
+#   n_simulations_search: 2000
+#   n_simulations_final: 10000
+#   search_phase: "sobol_then_tpe"
+#   trial_budgets: { gbm: 50, garch_1_1: 150, regime_block_bootstrap: 300 }
+#   horizons: [30d, 90d, 180d, 365d, 1460d]
+#   walk_forward_step_size: 60
+#   seeds: [42, 123, 456, 789, 1024]
+#   ~12,500 total evaluations, confidence intervals
+# ──────────────────────────────────────────────────────────
+
+simulation:
+  n_simulations_search: 500     # Paths during parameter search
+  n_simulations_final: 2000     # Paths for final scoring
+  search_phase: "sobol_only"    # "sobol_only" or "sobol_then_tpe"
+
+  # Trial budgets per model (number of parameter combinations to test)
+  trial_budgets:
+    gbm: 20
+    garch_1_1: 15
+    regime_block_bootstrap: 15
+
+  # Sobol ratio (fraction of trials using Sobol before TPE kicks in)
+  sobol_ratio: 0.4
+
+  # Seeds for statistical confidence (Full mode uses multiple)
+  seeds: [42]
+
+data:
+  source: "yfinance"
+  ticker: "BTC-USD"
+  start_date: "2013-01-01"
+  train_pct: 0.7  # 70% for training, 30% for walk-forward validation
+
+models:
+  - gbm
+  - regime_block_bootstrap
+  # - garch_1_1  # Uncomment when implemented
+
+horizons:
+  - 180d
+  - 365d
+  - 730d
+  - 1460d
+
+scoring:
+  # Scoring metrics (feed into composite score)
+  weights:
+    # Path Dynamics — 35% total
+    drawdown_duration_dist: 0.13
+    recovery_time_dist: 0.12
+    time_in_drawdown_ratio: 0.10
+    # Tail / Extreme Risk — 25% total
+    tail_index_accuracy: 0.13
+    percentile_band_coverage: 0.12
+    # Distributional — 15% total
+    ks_statistic: 0.07
+    qq_divergence: 0.08
+    # Temporal Dependence — 10%
+    vol_clustering_acf: 0.10
+    # Forecast Accuracy — 15%
+    mape: 0.15
+
+  # Diagnostic metrics (reported, not scored)
+  diagnostics:
+    - mae
+    - mase
+    - moment_matching
+    - es_match
+    - max_drawdown_depth_dist
+
+walk_forward:
+  step_size_days: 365  # Quick mode: fewer windows
+  min_training_days: 730  # At least 2 years of training data
+  recency_weighting: "exponential"  # "exponential", "linear", or "equal"
+  recency_half_life_days: 730  # Weight halves every 2 years
+
+output:
+  dir: "results/"
+  export_formats: ["csv", "json", "html"]
+  charts: true

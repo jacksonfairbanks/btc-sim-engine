@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BTC Sim Engine — Leaderboard (2026-03-31)</title>
+<style>
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    padding: 2rem;
+  }
+  h1 {
+    color: #f7931a;
+    font-size: 1.4rem;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  th {
+    background: #1a1a1a;
+    color: #f7931a;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.8rem;
+    border-bottom: 2px solid #333;
+  }
+  td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #1a1a1a;
+    font-size: 0.8rem;
+  }
+  tr:hover {
+    background: #111111;
+  }
+  .footer {
+    margin-top: 2rem;
+    color: #666;
+    font-size: 0.7rem;
+  }
+</style>
+</head>
+<body>
+<h1>BTC Price Path Simulation — Leaderboard (2026-03-31)</h1>
+<table>
+<thead><tr><th>rank</th><th>model</th><th>horizon</th><th>composite_score</th><th>score_ks_statistic</th><th>score_qq_divergence</th><th>score_tail_index_accuracy</th><th>score_percentile_band_coverage</th><th>score_drawdown_duration_dist</th><th>score_recovery_time_dist</th><th>score_time_in_drawdown_ratio</th><th>score_vol_clustering_acf</th><th>score_mape</th><th>param_block_length_sampling</th><th>param_mean_block_length</th><th>param_min_block_length</th><th>param_block_stride</th><th>param_min_pool_size</th><th>param_regime_enabled</th><th>param_transition_matrix_method</th><th>param_msm_variance_switching</th><th>param_msm_frequency</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>regime_block_bootstrap</td><td>730d</td><td>0.8265</td><td>0.9345</td><td>0.7851</td><td>0.9570</td><td>1.0000</td><td>0.8711</td><td>0.9031</td><td>0.9471</td><td>0.7799</td><td>0.8420</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>False</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>2</td><td>regime_block_bootstrap</td><td>365d</td><td>0.8221</td><td>0.8881</td><td>0.6216</td><td>0.8148</td><td>1.0000</td><td>0.8674</td><td>0.8504</td><td>0.9881</td><td>0.6661</td><td>0.8986</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>False</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>3</td><td>regime_block_bootstrap</td><td>180d</td><td>0.8098</td><td>0.8995</td><td>0.7985</td><td>0.6857</td><td>1.0000</td><td>0.7901</td><td>0.8064</td><td>0.9136</td><td>0.6086</td><td>0.8853</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>False</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>4</td><td>regime_block_bootstrap</td><td>1460d</td><td>0.7928</td><td>0.9267</td><td>0.7610</td><td>0.9694</td><td>1.0000</td><td>0.9333</td><td>0.9466</td><td>0.9561</td><td>0.8038</td><td>0.7937</td><td>geometric</td><td>30</td><td>5</td><td>5</td><td>8</td><td>False</td><td>fitted</td><td>True</td><td>weekly</td></tr>
+<tr><td>5</td><td>gbm</td><td>365d</td><td>0.7705</td><td>0.8017</td><td>0.4484</td><td>0.3376</td><td>1.0000</td><td>0.8402</td><td>0.8570</td><td>0.9477</td><td>0.5592</td><td>0.8406</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>6</td><td>gbm</td><td>1460d</td><td>0.7625</td><td>0.8434</td><td>0.6180</td><td>0.5131</td><td>1.0000</td><td>0.9245</td><td>0.9456</td><td>0.9151</td><td>0.6812</td><td>0.6272</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>7</td><td>gbm</td><td>730d</td><td>0.7618</td><td>0.8278</td><td>0.6372</td><td>0.4473</td><td>1.0000</td><td>0.8620</td><td>0.9118</td><td>0.9025</td><td>0.6666</td><td>0.7098</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>8</td><td>gbm</td><td>180d</td><td>0.7589</td><td>0.7893</td><td>0.6421</td><td>0.2547</td><td>1.0000</td><td>0.7738</td><td>0.8128</td><td>0.8566</td><td>0.5364</td><td>0.8674</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+</tbody>
+</table>
+<div class="footer">@LongGamma — btc-sim-engine</div>
+</body>
+</html>

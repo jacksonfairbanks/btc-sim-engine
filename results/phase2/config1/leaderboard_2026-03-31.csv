@@ -1,0 +1,9 @@
+rank,model,horizon,composite_score,score_ks_statistic,score_qq_divergence,score_tail_index_accuracy,score_percentile_band_coverage,score_drawdown_duration_dist,score_recovery_time_dist,score_time_in_drawdown_ratio,score_vol_clustering_acf,score_mape,param_block_length_sampling,param_mean_block_length,param_min_block_length,param_block_stride,param_min_pool_size,param_regime_enabled,param_transition_matrix_method,param_msm_variance_switching,param_msm_frequency
+1,regime_block_bootstrap,730d,0.826548,0.934504,0.785121,0.957004,1.0,0.871075,0.903134,0.947149,0.779892,0.842035,geometric,30,5,5,8,False,fitted,True,weekly
+2,regime_block_bootstrap,365d,0.82214,0.88814,0.621551,0.814755,1.0,0.867433,0.850353,0.988131,0.666051,0.898641,geometric,30,5,5,8,False,fitted,True,weekly
+3,regime_block_bootstrap,180d,0.80985,0.899473,0.798504,0.685738,1.0,0.790053,0.806413,0.913636,0.608586,0.885271,geometric,30,5,5,8,False,fitted,True,weekly
+4,regime_block_bootstrap,1460d,0.792752,0.926719,0.761022,0.969354,1.0,0.933261,0.946564,0.956138,0.8038,0.793706,geometric,30,5,5,8,False,fitted,True,weekly
+5,gbm,365d,0.770483,0.801721,0.448403,0.337593,1.0,0.840224,0.857024,0.947687,0.559224,0.840605,,,,,,,,,
+6,gbm,1460d,0.762483,0.84341,0.617997,0.513119,1.0,0.924533,0.945603,0.915113,0.681204,0.6272,,,,,,,,,
+7,gbm,730d,0.761769,0.827778,0.637221,0.447322,1.0,0.862042,0.911765,0.90252,0.666626,0.709827,,,,,,,,,
+8,gbm,180d,0.758914,0.789252,0.642138,0.254662,1.0,0.773792,0.812756,0.856553,0.536418,0.867402,,,,,,,,,

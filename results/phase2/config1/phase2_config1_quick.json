@@ -1,0 +1,2378 @@
+{
+  "phase": "phase2_config1_baseline",
+  "mode": "quick",
+  "timestamp": "2026-03-31T14:35:17.962776",
+  "locked_rbb_params": {
+    "block_length_sampling": "geometric",
+    "mean_block_length": 30,
+    "min_block_length": 5,
+    "block_stride": 5,
+    "min_pool_size": 8,
+    "regime_enabled": false,
+    "transition_matrix_method": "fitted",
+    "msm_variance_switching": true,
+    "msm_frequency": "weekly"
+  },
+  "horizons": [
+    "180d",
+    "365d",
+    "730d",
+    "1460d"
+  ],
+  "horizon_weights": {
+    "180d": 0.1,
+    "365d": 0.2,
+    "730d": 0.35,
+    "1460d": 0.35
+  },
+  "rbb": {
+    "model": "regime_block_bootstrap",
+    "locked_params": {
+      "block_length_sampling": "geometric",
+      "mean_block_length": 30,
+      "min_block_length": 5,
+      "block_stride": 5,
+      "min_pool_size": 8,
+      "regime_enabled": false,
+      "transition_matrix_method": "fitted",
+      "msm_variance_switching": true,
+      "msm_frequency": "weekly"
+    },
+    "per_horizon": {
+      "180d": {
+        "weighted_composite": 0.7981667831178618,
+        "n_windows": 10,
+        "elapsed_seconds": 4.6,
+        "window_composites": [
+          0.7550434911800072,
+          0.6939717590572496,
+          0.6655325980931756,
+          0.7196290287953941,
+          0.7492993032586364,
+          0.8168596658657401,
+          0.8346617865981111,
+          0.7776777270024845,
+          0.8659140548633628,
+          0.781527757617164
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2017-03-16",
+            "train_days": 730,
+            "weight": 0.013361727818486938,
+            "composite_score": 0.7550434911800072,
+            "scoring_metrics": {
+              "ks_statistic": 0.8405055555555556,
+              "qq_divergence": 0.8866088603688379,
+              "tail_index_accuracy": 0.47606297979773343,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.7156746875935643,
+              "recovery_time_dist": 0.8885898270747413,
+              "time_in_drawdown_ratio": 0.6568563990600315,
+              "vol_clustering_acf": 0.5660437717262141,
+              "mape": 0.8095513358209936
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2018-03-16",
+            "train_days": 1095,
+            "weight": 0.018896336697642097,
+            "composite_score": 0.6939717590572496,
+            "scoring_metrics": {
+              "ks_statistic": 0.8028611111111111,
+              "qq_divergence": 0.786988688482149,
+              "tail_index_accuracy": 0.8217194502617493,
+              "percentile_band_coverage": 0.3499079189686924,
+              "drawdown_duration_dist": 0.7345743463584873,
+              "recovery_time_dist": 0.7805456048498209,
+              "time_in_drawdown_ratio": 0.7392210566139739,
+              "vol_clustering_acf": 0.7019128773826634,
+              "mape": 0.6181758425492256
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2019-03-16",
+            "train_days": 1460,
+            "weight": 0.026723455636973877,
+            "composite_score": 0.6655325980931756,
+            "scoring_metrics": {
+              "ks_statistic": 0.8598972222222222,
+              "qq_divergence": 0.9154717861874214,
+              "tail_index_accuracy": 0.9225123124096815,
+              "percentile_band_coverage": 0.6077348066298343,
+              "drawdown_duration_dist": 0.5,
+              "recovery_time_dist": 0.5,
+              "time_in_drawdown_ratio": 0.8337529180751806,
+              "vol_clustering_acf": 0.5959123982056804,
+              "mape": 0.4752049373713431
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2020-03-15",
+            "train_days": 1825,
+            "weight": 0.0377926733952842,
+            "composite_score": 0.7196290287953941,
+            "scoring_metrics": {
+              "ks_statistic": 0.8595472222222222,
+              "qq_divergence": 0.9045928362619768,
+              "tail_index_accuracy": 0.6641184344804183,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.4925138767163306,
+              "recovery_time_dist": 0.5178984536710094,
+              "time_in_drawdown_ratio": 0.8261233058147108,
+              "vol_clustering_acf": 0.7726074836618668,
+              "mape": 0.6314013499674946
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2021-03-15",
+            "train_days": 2190,
+            "weight": 0.05344691127394775,
+            "composite_score": 0.7492993032586364,
+            "scoring_metrics": {
+              "ks_statistic": 0.8704944444444443,
+              "qq_divergence": 0.9227856480133653,
+              "tail_index_accuracy": 0.9322541755568461,
+              "percentile_band_coverage": 0.620012277470841,
+              "drawdown_duration_dist": 0.780848500587934,
+              "recovery_time_dist": 0.8461577220660852,
+              "time_in_drawdown_ratio": 0.5762687758614826,
+              "vol_clustering_acf": 0.582345472873398,
+              "mape": 0.6669111172647705
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2022-03-15",
+            "train_days": 2555,
+            "weight": 0.07558534679056839,
+            "composite_score": 0.8168596658657401,
+            "scoring_metrics": {
+              "ks_statistic": 0.9135722222222222,
+              "qq_divergence": 0.9679262571119855,
+              "tail_index_accuracy": 0.7367916289946486,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.7999625236029231,
+              "recovery_time_dist": 0.7548790658882402,
+              "time_in_drawdown_ratio": 0.8890097654027755,
+              "vol_clustering_acf": 0.6506455822758304,
+              "mape": 0.7409763148606129
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 6,
+            "train_end_date": "2022-09-16",
+            "test_start_date": "2022-09-16",
+            "test_end_date": "2023-03-15",
+            "train_days": 2920,
+            "weight": 0.1068938225478955,
+            "composite_score": 0.8346617865981111,
+            "scoring_metrics": {
+              "ks_statistic": 0.9064305555555555,
+              "qq_divergence": 0.7541183688264907,
+              "tail_index_accuracy": 0.6887449353158024,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.82284918740766,
+              "recovery_time_dist": 0.8832506939588499,
+              "time_in_drawdown_ratio": 0.9878789371893665,
+              "vol_clustering_acf": 0.5919590355679037,
+              "mape": 0.8693404113217587
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 7,
+            "train_end_date": "2023-09-16",
+            "test_start_date": "2023-09-16",
+            "test_end_date": "2024-03-14",
+            "train_days": 3285,
+            "weight": 0.15117069358113677,
+            "composite_score": 0.7776777270024845,
+            "scoring_metrics": {
+              "ks_statistic": 0.8742833333333333,
+              "qq_divergence": 0.7288104531965748,
+              "tail_index_accuracy": 0.5816952815821003,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8500841613726449,
+              "recovery_time_dist": 0.8325946965881696,
+              "time_in_drawdown_ratio": 0.6604625772655565,
+              "vol_clustering_acf": 0.687328288219096,
+              "mape": 0.7823418646017516
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 8,
+            "train_end_date": "2024-09-15",
+            "test_start_date": "2024-09-15",
+            "test_end_date": "2025-03-14",
+            "train_days": 3650,
+            "weight": 0.213787645095791,
+            "composite_score": 0.8659140548633628,
+            "scoring_metrics": {
+              "ks_statistic": 0.9524944444444444,
+              "qq_divergence": 0.8548624178123337,
+              "tail_index_accuracy": 0.979450200518308,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8268914372280647,
+              "recovery_time_dist": 0.8745389614191207,
+              "time_in_drawdown_ratio": 0.7666428237031272,
+              "vol_clustering_acf": 0.7379481120621965,
+              "mape": 0.8041484564893975
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 9,
+            "train_end_date": "2025-09-15",
+            "test_start_date": "2025-09-15",
+            "test_end_date": "2026-03-14",
+            "train_days": 4015,
+            "weight": 0.30234138716227354,
+            "composite_score": 0.781527757617164,
+            "scoring_metrics": {
+              "ks_statistic": 0.8989444444444444,
+              "qq_divergence": 0.791788063103695,
+              "tail_index_accuracy": 0.9615031906108452,
+              "percentile_band_coverage": 0.9515039901780233,
+              "drawdown_duration_dist": 0.6031538367610376,
+              "recovery_time_dist": 0.7471734214646025,
+              "time_in_drawdown_ratio": 0.8805860475342547,
+              "vol_clustering_acf": 0.6951351726878446,
+              "mape": 0.6029318432005831
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          }
+        ]
+      },
+      "365d": {
+        "weighted_composite": 0.8314391661275442,
+        "n_windows": 9,
+        "elapsed_seconds": 8.2,
+        "window_composites": [
+          0.75881450485025,
+          0.7661475241921507,
+          0.7898190649894444,
+          0.802894138578295,
+          0.8003840848387281,
+          0.7539611927880692,
+          0.8666658101684799,
+          0.8467239772042761,
+          0.8587328909935504
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2017-09-17",
+            "train_days": 730,
+            "weight": 0.019152243765956114,
+            "composite_score": 0.75881450485025,
+            "scoring_metrics": {
+              "ks_statistic": 0.8871657534246575,
+              "qq_divergence": 0.9455313699061149,
+              "tail_index_accuracy": 0.7232847948347504,
+              "percentile_band_coverage": 0.6921675774134791,
+              "drawdown_duration_dist": 0.7563740352811467,
+              "recovery_time_dist": 0.8823036363791239,
+              "time_in_drawdown_ratio": 0.6462171292325745,
+              "vol_clustering_acf": 0.776664380578881,
+              "mape": 0.6499336531114023
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2018-09-17",
+            "train_days": 1095,
+            "weight": 0.0270853628836907,
+            "composite_score": 0.7661475241921507,
+            "scoring_metrics": {
+              "ks_statistic": 0.8699520547945205,
+              "qq_divergence": 0.8816544959351299,
+              "tail_index_accuracy": 0.7233596541023976,
+              "percentile_band_coverage": 0.7316332726168792,
+              "drawdown_duration_dist": 0.7244526180644714,
+              "recovery_time_dist": 0.7497428314259997,
+              "time_in_drawdown_ratio": 0.9636404443012861,
+              "vol_clustering_acf": 0.6471487818935113,
+              "mape": 0.7177258013027042
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2019-09-17",
+            "train_days": 1460,
+            "weight": 0.038304487531912235,
+            "composite_score": 0.7898190649894444,
+            "scoring_metrics": {
+              "ks_statistic": 0.9542301369863013,
+              "qq_divergence": 0.9916817704981538,
+              "tail_index_accuracy": 0.8770147325505098,
+              "percentile_band_coverage": 0.880388585306618,
+              "drawdown_duration_dist": 0.6530534765158911,
+              "recovery_time_dist": 0.7109170910854727,
+              "time_in_drawdown_ratio": 0.9274074082716134,
+              "vol_clustering_acf": 0.7510350527464716,
+              "mape": 0.5731907954203965
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2020-09-16",
+            "train_days": 1825,
+            "weight": 0.0541707257673814,
+            "composite_score": 0.802894138578295,
+            "scoring_metrics": {
+              "ks_statistic": 0.9357410958904109,
+              "qq_divergence": 0.9427012498849544,
+              "tail_index_accuracy": 0.858672777519093,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.7868533191291032,
+              "recovery_time_dist": 0.7500963332522106,
+              "time_in_drawdown_ratio": 0.8831203549801403,
+              "vol_clustering_acf": 0.7448109231118659,
+              "mape": 0.5016872100762562
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2021-09-16",
+            "train_days": 2190,
+            "weight": 0.07660897506382446,
+            "composite_score": 0.8003840848387281,
+            "scoring_metrics": {
+              "ks_statistic": 0.9131205479452056,
+              "qq_divergence": 0.9685077498195008,
+              "tail_index_accuracy": 0.9639950894599006,
+              "percentile_band_coverage": 0.6678809957498482,
+              "drawdown_duration_dist": 0.8414879954336271,
+              "recovery_time_dist": 0.8513917732326617,
+              "time_in_drawdown_ratio": 0.8514864397144555,
+              "vol_clustering_acf": 0.6742702113737115,
+              "mape": 0.5958921871608474
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2022-09-16",
+            "train_days": 2555,
+            "weight": 0.1083414515347628,
+            "composite_score": 0.7539611927880692,
+            "scoring_metrics": {
+              "ks_statistic": 0.9066534246575343,
+              "qq_divergence": 0.9664671848405683,
+              "tail_index_accuracy": 0.8628045180574844,
+              "percentile_band_coverage": 0.8166363084395871,
+              "drawdown_duration_dist": 0.8132329984389385,
+              "recovery_time_dist": 0.7667921744778765,
+              "time_in_drawdown_ratio": 0.878466535555845,
+              "vol_clustering_acf": 0.7158458168942599,
+              "mape": 0.3056703195677017
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 6,
+            "train_end_date": "2022-09-16",
+            "test_start_date": "2022-09-16",
+            "test_end_date": "2023-09-16",
+            "train_days": 2920,
+            "weight": 0.1532179501276489,
+            "composite_score": 0.8666658101684799,
+            "scoring_metrics": {
+              "ks_statistic": 0.8919780821917808,
+              "qq_divergence": 0.6384683967441457,
+              "tail_index_accuracy": 0.8362042979184009,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8961696907043148,
+              "recovery_time_dist": 0.9079367795420498,
+              "time_in_drawdown_ratio": 0.9970282339882469,
+              "vol_clustering_acf": 0.6467696911641151,
+              "mape": 0.8973936539619225
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 7,
+            "train_end_date": "2023-09-16",
+            "test_start_date": "2023-09-16",
+            "test_end_date": "2024-09-15",
+            "train_days": 3285,
+            "weight": 0.2166829030695256,
+            "composite_score": 0.8467239772042761,
+            "scoring_metrics": {
+              "ks_statistic": 0.9540616438356164,
+              "qq_divergence": 0.8892584268055664,
+              "tail_index_accuracy": 0.7809507987885367,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8443288516960756,
+              "recovery_time_dist": 0.8486979774526304,
+              "time_in_drawdown_ratio": 0.8991998200185831,
+              "vol_clustering_acf": 0.7725703097256095,
+              "mape": 0.7232790877306866
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 8,
+            "train_end_date": "2024-09-15",
+            "test_start_date": "2024-09-15",
+            "test_end_date": "2025-09-15",
+            "train_days": 3650,
+            "weight": 0.3064359002552978,
+            "composite_score": 0.8587328909935504,
+            "scoring_metrics": {
+              "ks_statistic": 0.9329767123287671,
+              "qq_divergence": 0.7309929153304892,
+              "tail_index_accuracy": 0.7550052806869476,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.862357737955824,
+              "recovery_time_dist": 0.930503694713169,
+              "time_in_drawdown_ratio": 0.8870323580289803,
+              "vol_clustering_acf": 0.8203597188648077,
+              "mape": 0.815254962837188
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          }
+        ]
+      },
+      "730d": {
+        "weighted_composite": 0.8386046620843833,
+        "n_windows": 8,
+        "elapsed_seconds": 14.0,
+        "window_composites": [
+          0.6918106574781863,
+          0.7802049510094362,
+          0.7962359991718986,
+          0.8684277456207852,
+          0.8583923400574768,
+          0.7042825179625385,
+          0.9032289727997669,
+          0.8733823098954917
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2018-09-17",
+            "train_days": 730,
+            "weight": 0.027614237491539677,
+            "composite_score": 0.6918106574781863,
+            "scoring_metrics": {
+              "ks_statistic": 0.8852273972602739,
+              "qq_divergence": 0.9030319208266386,
+              "tail_index_accuracy": 0.7019052728067621,
+              "percentile_band_coverage": 0.34655722754217966,
+              "drawdown_duration_dist": 0.7520807795896941,
+              "recovery_time_dist": 0.8337147964077077,
+              "time_in_drawdown_ratio": 0.7694064370841878,
+              "vol_clustering_acf": 0.7207819946545279,
+              "mape": 0.5195500876295903
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2019-09-17",
+            "train_days": 1095,
+            "weight": 0.03905242917512701,
+            "composite_score": 0.7802049510094362,
+            "scoring_metrics": {
+              "ks_statistic": 0.9195178082191781,
+              "qq_divergence": 0.9306702458430002,
+              "tail_index_accuracy": 0.8287684363418325,
+              "percentile_band_coverage": 0.9226326189390484,
+              "drawdown_duration_dist": 0.7272990167727009,
+              "recovery_time_dist": 0.7397629121935867,
+              "time_in_drawdown_ratio": 0.9327051208873698,
+              "vol_clustering_acf": 0.66809998138412,
+              "mape": 0.5301889459913276
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2020-09-16",
+            "train_days": 1460,
+            "weight": 0.055228474983079354,
+            "composite_score": 0.7962359991718986,
+            "scoring_metrics": {
+              "ks_statistic": 0.9477260273972603,
+              "qq_divergence": 0.9799060153193815,
+              "tail_index_accuracy": 0.9845836692928224,
+              "percentile_band_coverage": 0.9879920960632315,
+              "drawdown_duration_dist": 0.6601245923408909,
+              "recovery_time_dist": 0.7333603665706987,
+              "time_in_drawdown_ratio": 0.9010222272784361,
+              "vol_clustering_acf": 0.7388935982630374,
+              "mape": 0.447578292972921
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2021-09-16",
+            "train_days": 1825,
+            "weight": 0.078104858350254,
+            "composite_score": 0.8684277456207852,
+            "scoring_metrics": {
+              "ks_statistic": 0.9477979452054794,
+              "qq_divergence": 0.9863614630239408,
+              "tail_index_accuracy": 0.9896557096199645,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.824841618687963,
+              "recovery_time_dist": 0.8633075264331571,
+              "time_in_drawdown_ratio": 0.9881482877054312,
+              "vol_clustering_acf": 0.7335398005563102,
+              "mape": 0.6101507182420183
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2022-09-16",
+            "train_days": 2190,
+            "weight": 0.11045694996615871,
+            "composite_score": 0.8583923400574768,
+            "scoring_metrics": {
+              "ks_statistic": 0.9255828767123288,
+              "qq_divergence": 0.9857277521553055,
+              "tail_index_accuracy": 0.9028917475501387,
+              "percentile_band_coverage": 0.8952728378172974,
+              "drawdown_duration_dist": 0.8979274703560507,
+              "recovery_time_dist": 0.877314883741297,
+              "time_in_drawdown_ratio": 0.9823274154805284,
+              "vol_clustering_acf": 0.7706250285474157,
+              "mape": 0.6175403279837263
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2023-09-16",
+            "train_days": 2555,
+            "weight": 0.156209716700508,
+            "composite_score": 0.7042825179625385,
+            "scoring_metrics": {
+              "ks_statistic": 0.9229753424657534,
+              "qq_divergence": 0.9271604719129668,
+              "tail_index_accuracy": 0.9609592963100357,
+              "percentile_band_coverage": 0.5213558291533668,
+              "drawdown_duration_dist": 0.8199744120711714,
+              "recovery_time_dist": 0.7831608414796676,
+              "time_in_drawdown_ratio": 0.8703247258333906,
+              "vol_clustering_acf": 0.8367665584385976,
+              "mape": 0.04485930162785759
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 6,
+            "train_end_date": "2022-09-16",
+            "test_start_date": "2022-09-16",
+            "test_end_date": "2024-09-15",
+            "train_days": 2920,
+            "weight": 0.22091389993231741,
+            "composite_score": 0.9032289727997669,
+            "scoring_metrics": {
+              "ks_statistic": 0.933981506849315,
+              "qq_divergence": 0.7823332846147144,
+              "tail_index_accuracy": 0.9468940930933316,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.9261137783931758,
+              "recovery_time_dist": 0.9304856931799603,
+              "time_in_drawdown_ratio": 0.9472266615759445,
+              "vol_clustering_acf": 0.7776730926336783,
+              "mape": 0.8508288177022278
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 7,
+            "train_end_date": "2023-09-16",
+            "test_start_date": "2023-09-16",
+            "test_end_date": "2025-09-15",
+            "train_days": 3285,
+            "weight": 0.312419433401016,
+            "composite_score": 0.8733823098954917,
+            "scoring_metrics": {
+              "ks_statistic": 0.9459698630136987,
+              "qq_divergence": 0.8173995590039905,
+              "tail_index_accuracy": 0.8955214420853265,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8885423200799538,
+              "recovery_time_dist": 0.9126522078378794,
+              "time_in_drawdown_ratio": 0.9179366391155386,
+              "vol_clustering_acf": 0.8509752918611736,
+              "mape": 0.6895647176300688
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          }
+        ]
+      },
+      "1460d": {
+        "weighted_composite": 0.8058939335617781,
+        "n_windows": 6,
+        "elapsed_seconds": 20.7,
+        "window_composites": [
+          0.7133929985571114,
+          0.8201877479113796,
+          0.838685354440976,
+          0.8234687558418674,
+          0.8757684060060204,
+          0.7488828471049394
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2020-09-16",
+            "train_days": 730,
+            "weight": 0.059173366053299294,
+            "composite_score": 0.7133929985571114,
+            "scoring_metrics": {
+              "ks_statistic": 0.9279619863013698,
+              "qq_divergence": 0.9444657171303579,
+              "tail_index_accuracy": 0.7454577965227585,
+              "percentile_band_coverage": 0.3635257434025401,
+              "drawdown_duration_dist": 0.7482914218003806,
+              "recovery_time_dist": 0.8171864813861726,
+              "time_in_drawdown_ratio": 0.9107636914117078,
+              "vol_clustering_acf": 0.7448937027164083,
+              "mape": 0.4762653158408109
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2021-09-16",
+            "train_days": 1095,
+            "weight": 0.08368377680384356,
+            "composite_score": 0.8201877479113796,
+            "scoring_metrics": {
+              "ks_statistic": 0.9248647260273972,
+              "qq_divergence": 0.9581280997030698,
+              "tail_index_accuracy": 0.8513801746727448,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8722592684064653,
+              "recovery_time_dist": 0.8528669327307967,
+              "time_in_drawdown_ratio": 0.934564544455794,
+              "vol_clustering_acf": 0.7650913315820632,
+              "mape": 0.41609481320958425
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2022-09-16",
+            "train_days": 1460,
+            "weight": 0.11834673210659859,
+            "composite_score": 0.838685354440976,
+            "scoring_metrics": {
+              "ks_statistic": 0.9499277397260274,
+              "qq_divergence": 0.9923884769725589,
+              "tail_index_accuracy": 0.9112911074284116,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8929201037657576,
+              "recovery_time_dist": 0.9177683826821159,
+              "time_in_drawdown_ratio": 0.9468288300341388,
+              "vol_clustering_acf": 0.726095731489229,
+              "mape": 0.40551476648611184
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2023-09-16",
+            "train_days": 1825,
+            "weight": 0.16736755360768713,
+            "composite_score": 0.8234687558418674,
+            "scoring_metrics": {
+              "ks_statistic": 0.945252397260274,
+              "qq_divergence": 0.9749921502932414,
+              "tail_index_accuracy": 0.9699579106810495,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8748846644464418,
+              "recovery_time_dist": 0.8910159659120078,
+              "time_in_drawdown_ratio": 0.9470878947170954,
+              "vol_clustering_acf": 0.7407325149747661,
+              "mape": 0.29178816243325373
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2024-09-15",
+            "train_days": 2190,
+            "weight": 0.23669346421319717,
+            "composite_score": 0.8757684060060204,
+            "scoring_metrics": {
+              "ks_statistic": 0.9574941780821918,
+              "qq_divergence": 0.9762158887723222,
+              "tail_index_accuracy": 0.9488849795892048,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.9003410243252172,
+              "recovery_time_dist": 0.8875340430799703,
+              "time_in_drawdown_ratio": 0.960734459927758,
+              "vol_clustering_acf": 0.8238559349766995,
+              "mape": 0.5685602484637609
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2025-09-15",
+            "train_days": 2555,
+            "weight": 0.33473510721537425,
+            "composite_score": 0.7488828471049394,
+            "scoring_metrics": {
+              "ks_statistic": 0.9406928082191781,
+              "qq_divergence": 0.873316561647215,
+              "tail_index_accuracy": 0.9637523391592427,
+              "percentile_band_coverage": 0.792455700053236,
+              "drawdown_duration_dist": 0.8520644261185474,
+              "recovery_time_dist": 0.8213269419306705,
+              "time_in_drawdown_ratio": 0.9186357137222206,
+              "vol_clustering_acf": 0.8770445902125077,
+              "mape": 0.02593932453443659
+            },
+            "fitted_params": {
+              "regime_enabled": false,
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true
+            },
+            "locked_config": {
+              "block_length_sampling": "geometric",
+              "mean_block_length": 30,
+              "min_block_length": 5,
+              "block_stride": 5,
+              "min_pool_size": 8,
+              "regime_enabled": false,
+              "transition_matrix_method": "fitted",
+              "msm_variance_switching": true,
+              "msm_frequency": "weekly"
+            }
+          }
+        ]
+      }
+    },
+    "cross_horizon": {
+      "weighted_composite": 0.8217,
+      "horizon_std": 0.0169,
+      "stability_penalty": 0.0017,
+      "final_score": 0.82
+    }
+  },
+  "gbm": {
+    "model": "gbm",
+    "locked_params": null,
+    "per_horizon": {
+      "180d": {
+        "weighted_composite": 0.7291795847990654,
+        "n_windows": 10,
+        "elapsed_seconds": 3.5,
+        "window_composites": [
+          0.6625814508601267,
+          0.6495519628212825,
+          0.6432511205844323,
+          0.6800564766740812,
+          0.6673623587439114,
+          0.8499715311667629,
+          0.7517944640890057,
+          0.6932429385014933,
+          0.7734651681596905,
+          0.7102230021012319
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2017-03-16",
+            "train_days": 730,
+            "weight": 0.013361727818486938,
+            "composite_score": 0.6625814508601267,
+            "scoring_metrics": {
+              "ks_statistic": 0.7346166666666667,
+              "qq_divergence": 0.652745807841412,
+              "tail_index_accuracy": 0.03063758942524313,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.7560521632354884,
+              "recovery_time_dist": 0.9157698842948458,
+              "time_in_drawdown_ratio": 0.6380903684566486,
+              "vol_clustering_acf": 0.47526494209098963,
+              "mape": 0.7696068970007104
+            },
+            "fitted_params": {
+              "mu": 0.14153516805707667,
+              "sigma": 0.6372912470459665
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2018-03-16",
+            "train_days": 1095,
+            "weight": 0.018896336697642097,
+            "composite_score": 0.6495519628212825,
+            "scoring_metrics": {
+              "ks_statistic": 0.8777138888888888,
+              "qq_divergence": 0.8542513444787676,
+              "tail_index_accuracy": 0.5527351731588904,
+              "percentile_band_coverage": 0.22713321055862493,
+              "drawdown_duration_dist": 0.7411294124804185,
+              "recovery_time_dist": 0.8098387763538653,
+              "time_in_drawdown_ratio": 0.7079911106069124,
+              "vol_clustering_acf": 0.6662108396781632,
+              "mape": 0.5980843563309485
+            },
+            "fitted_params": {
+              "mu": 0.6900688675266307,
+              "sigma": 0.6795045097634937
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2019-03-16",
+            "train_days": 1460,
+            "weight": 0.026723455636973877,
+            "composite_score": 0.6432511205844323,
+            "scoring_metrics": {
+              "ks_statistic": 0.7888555555555555,
+              "qq_divergence": 0.7602232543343206,
+              "tail_index_accuracy": 0.5128167994349015,
+              "percentile_band_coverage": 0.9699201964395334,
+              "drawdown_duration_dist": 0.5,
+              "recovery_time_dist": 0.5,
+              "time_in_drawdown_ratio": 0.8725252928694239,
+              "vol_clustering_acf": 0.5024953679692292,
+              "mape": 0.5443646517710082
+            },
+            "fitted_params": {
+              "mu": 0.6641957657717531,
+              "sigma": 0.753565166341442
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2020-03-15",
+            "train_days": 1825,
+            "weight": 0.0377926733952842,
+            "composite_score": 0.6800564766740812,
+            "scoring_metrics": {
+              "ks_statistic": 0.8171166666666666,
+              "qq_divergence": 0.8088901102577702,
+              "tail_index_accuracy": 0.2294773418193771,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.48860628274189666,
+              "recovery_time_dist": 0.5109719811554674,
+              "time_in_drawdown_ratio": 0.8544448059019911,
+              "vol_clustering_acf": 0.9279324524476443,
+              "mape": 0.7016124428013849
+            },
+            "fitted_params": {
+              "mu": 0.6224459214872137,
+              "sigma": 0.7453576327289929
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2021-03-15",
+            "train_days": 2190,
+            "weight": 0.05344691127394775,
+            "composite_score": 0.6673623587439114,
+            "scoring_metrics": {
+              "ks_statistic": 0.8358527777777778,
+              "qq_divergence": 0.9128482628662448,
+              "tail_index_accuracy": 0.41840308929069375,
+              "percentile_band_coverage": 0.5647636586863106,
+              "drawdown_duration_dist": 0.7805217802519205,
+              "recovery_time_dist": 0.8489322595467848,
+              "time_in_drawdown_ratio": 0.5410880667051498,
+              "vol_clustering_acf": 0.5932078343237678,
+              "mape": 0.6459431329250956
+            },
+            "fitted_params": {
+              "mu": 0.5269341774085844,
+              "sigma": 0.7492123736605322
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2022-03-15",
+            "train_days": 2555,
+            "weight": 0.07558534679056839,
+            "composite_score": 0.8499715311667629,
+            "scoring_metrics": {
+              "ks_statistic": 0.9067888888888889,
+              "qq_divergence": 0.9485404800876027,
+              "tail_index_accuracy": 0.7899053486502204,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8197417371007958,
+              "recovery_time_dist": 0.774214306472371,
+              "time_in_drawdown_ratio": 0.9428731438548749,
+              "vol_clustering_acf": 0.7228253916694205,
+              "mape": 0.8125558604052417
+            },
+            "fitted_params": {
+              "mu": 0.6653156367382083,
+              "sigma": 0.7540296128655157
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 6,
+            "train_end_date": "2022-09-16",
+            "test_start_date": "2022-09-16",
+            "test_end_date": "2023-03-15",
+            "train_days": 2920,
+            "weight": 0.1068938225478955,
+            "composite_score": 0.7517944640890057,
+            "scoring_metrics": {
+              "ks_statistic": 0.7998027777777778,
+              "qq_divergence": 0.5829421228641581,
+              "tail_index_accuracy": 0.24552379546322697,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8409062980030723,
+              "recovery_time_dist": 0.8717627401837929,
+              "time_in_drawdown_ratio": 0.9640757912305454,
+              "vol_clustering_acf": 0.5280452582594759,
+              "mape": 0.89408902595835
+            },
+            "fitted_params": {
+              "mu": 0.4703776714798836,
+              "sigma": 0.7455558995473018
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 7,
+            "train_end_date": "2023-09-16",
+            "test_start_date": "2023-09-16",
+            "test_end_date": "2024-03-14",
+            "train_days": 3285,
+            "weight": 0.15117069358113677,
+            "composite_score": 0.6932429385014933,
+            "scoring_metrics": {
+              "ks_statistic": 0.763786111111111,
+              "qq_divergence": 0.574137705346684,
+              "tail_index_accuracy": 0.16950438755395955,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8305075552606055,
+              "recovery_time_dist": 0.8340104226102172,
+              "time_in_drawdown_ratio": 0.6317514362565598,
+              "vol_clustering_acf": 0.686449112713859,
+              "mape": 0.7462935741321296
+            },
+            "fitted_params": {
+              "mu": 0.4515088054990584,
+              "sigma": 0.7197776767359881
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 8,
+            "train_end_date": "2024-09-15",
+            "test_start_date": "2024-09-15",
+            "test_end_date": "2025-03-14",
+            "train_days": 3650,
+            "weight": 0.213787645095791,
+            "composite_score": 0.7734651681596905,
+            "scoring_metrics": {
+              "ks_statistic": 0.8723638888888889,
+              "qq_divergence": 0.7696190492515792,
+              "tail_index_accuracy": 0.5145634239248061,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.7921955155916767,
+              "recovery_time_dist": 0.8786878881987578,
+              "time_in_drawdown_ratio": 0.7351414805916845,
+              "vol_clustering_acf": 0.6641556738794372,
+              "mape": 0.7705283188615737
+            },
+            "fitted_params": {
+              "mu": 0.4876771179217995,
+              "sigma": 0.7020163825960318
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 9,
+            "train_end_date": "2025-09-15",
+            "test_start_date": "2025-09-15",
+            "test_end_date": "2026-03-14",
+            "train_days": 4015,
+            "weight": 0.30234138716227354,
+            "composite_score": 0.7102230021012319,
+            "scoring_metrics": {
+              "ks_statistic": 0.8232305555555556,
+              "qq_divergence": 0.6911107298467353,
+              "tail_index_accuracy": 0.40287897816323326,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.6325759799604689,
+              "recovery_time_dist": 0.7548993731441769,
+              "time_in_drawdown_ratio": 0.9116623851811967,
+              "vol_clustering_acf": 0.6180288324754936,
+              "mape": 0.6609454248370177
+            },
+            "fitted_params": {
+              "mu": 0.5028010878426817,
+              "sigma": 0.6823652402514545
+            },
+            "locked_config": "MLE (no hyperparams)"
+          }
+        ]
+      },
+      "365d": {
+        "weighted_composite": 0.7848806378969768,
+        "n_windows": 9,
+        "elapsed_seconds": 5.5,
+        "window_composites": [
+          0.7117212989584901,
+          0.7488190163088893,
+          0.747480577521527,
+          0.7636794621984395,
+          0.7174922028539237,
+          0.7772115665065199,
+          0.7605945055857435,
+          0.8133812042667187,
+          0.8126120624111202
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2017-09-17",
+            "train_days": 730,
+            "weight": 0.019152243765956114,
+            "composite_score": 0.7117212989584901,
+            "scoring_metrics": {
+              "ks_statistic": 0.8184493150684932,
+              "qq_divergence": 0.9119373514000919,
+              "tail_index_accuracy": 0.4942442797007784,
+              "percentile_band_coverage": 0.6314511232544019,
+              "drawdown_duration_dist": 0.8116438994680057,
+              "recovery_time_dist": 0.9517637413534262,
+              "time_in_drawdown_ratio": 0.6282678238084076,
+              "vol_clustering_acf": 0.6670363590888718,
+              "mape": 0.61462128971386
+            },
+            "fitted_params": {
+              "mu": 0.14153516805707667,
+              "sigma": 0.6372912470459665
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2018-09-17",
+            "train_days": 1095,
+            "weight": 0.0270853628836907,
+            "composite_score": 0.7488190163088893,
+            "scoring_metrics": {
+              "ks_statistic": 0.9362890410958904,
+              "qq_divergence": 0.9330307685918655,
+              "tail_index_accuracy": 0.6876086760663391,
+              "percentile_band_coverage": 0.6769884638737098,
+              "drawdown_duration_dist": 0.7334489005349516,
+              "recovery_time_dist": 0.784191202428864,
+              "time_in_drawdown_ratio": 0.9172091490348873,
+              "vol_clustering_acf": 0.5752373490378466,
+              "mape": 0.6620841814871844
+            },
+            "fitted_params": {
+              "mu": 0.6900688675266307,
+              "sigma": 0.6795045097634937
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2019-09-17",
+            "train_days": 1460,
+            "weight": 0.038304487531912235,
+            "composite_score": 0.747480577521527,
+            "scoring_metrics": {
+              "ks_statistic": 0.8634465753424657,
+              "qq_divergence": 0.9028236056644455,
+              "tail_index_accuracy": 0.5546892472397945,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.6578759466704123,
+              "recovery_time_dist": 0.6744714468437288,
+              "time_in_drawdown_ratio": 0.9658153532969086,
+              "vol_clustering_acf": 0.6183461148824447,
+              "mape": 0.6521815543125933
+            },
+            "fitted_params": {
+              "mu": 0.6641957657717531,
+              "sigma": 0.753565166341442
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2020-09-16",
+            "train_days": 1825,
+            "weight": 0.0541707257673814,
+            "composite_score": 0.7636794621984395,
+            "scoring_metrics": {
+              "ks_statistic": 0.8691342465753424,
+              "qq_divergence": 0.846314453698383,
+              "tail_index_accuracy": 0.3508619481064086,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.797865127359355,
+              "recovery_time_dist": 0.7434784810981478,
+              "time_in_drawdown_ratio": 0.9239511791096737,
+              "vol_clustering_acf": 0.8455824235751416,
+              "mape": 0.6641974055432421
+            },
+            "fitted_params": {
+              "mu": 0.6224459214872137,
+              "sigma": 0.7453576327289929
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2021-09-16",
+            "train_days": 2190,
+            "weight": 0.07660897506382446,
+            "composite_score": 0.7174922028539237,
+            "scoring_metrics": {
+              "ks_statistic": 0.9052712328767123,
+              "qq_divergence": 0.9712689563228487,
+              "tail_index_accuracy": 0.5003601503238392,
+              "percentile_band_coverage": 0.5494839101396478,
+              "drawdown_duration_dist": 0.8469820081253627,
+              "recovery_time_dist": 0.8486405317160788,
+              "time_in_drawdown_ratio": 0.8166273997004652,
+              "vol_clustering_acf": 0.6672702379523774,
+              "mape": 0.5673501510690545
+            },
+            "fitted_params": {
+              "mu": 0.5269341774085844,
+              "sigma": 0.7492123736605322
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2022-09-16",
+            "train_days": 2555,
+            "weight": 0.1083414515347628,
+            "composite_score": 0.7772115665065199,
+            "scoring_metrics": {
+              "ks_statistic": 0.890895890410959,
+              "qq_divergence": 0.9321174299337062,
+              "tail_index_accuracy": 0.6028289068998693,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8251945455843507,
+              "recovery_time_dist": 0.7911450557023085,
+              "time_in_drawdown_ratio": 0.9189651837682433,
+              "vol_clustering_acf": 0.8053765799564948,
+              "mape": 0.4484321860223792
+            },
+            "fitted_params": {
+              "mu": 0.6653156367382083,
+              "sigma": 0.7540296128655157
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 6,
+            "train_end_date": "2022-09-16",
+            "test_start_date": "2022-09-16",
+            "test_end_date": "2023-09-16",
+            "train_days": 2920,
+            "weight": 0.1532179501276489,
+            "composite_score": 0.7605945055857435,
+            "scoring_metrics": {
+              "ks_statistic": 0.8088013698630137,
+              "qq_divergence": 0.4725328330902545,
+              "tail_index_accuracy": 0.3454359659069411,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.867314929874347,
+              "recovery_time_dist": 0.908322822677145,
+              "time_in_drawdown_ratio": 0.9534969548334766,
+              "vol_clustering_acf": 0.559487797996914,
+              "mape": 0.854806350614989
+            },
+            "fitted_params": {
+              "mu": 0.4703776714798836,
+              "sigma": 0.7455558995473018
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 7,
+            "train_end_date": "2023-09-16",
+            "test_start_date": "2023-09-16",
+            "test_end_date": "2024-09-15",
+            "train_days": 3285,
+            "weight": 0.2166829030695256,
+            "composite_score": 0.8133812042667187,
+            "scoring_metrics": {
+              "ks_statistic": 0.8527616438356165,
+              "qq_divergence": 0.7820503090508408,
+              "tail_index_accuracy": 0.7300504084434495,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8776351931695452,
+              "recovery_time_dist": 0.8537109194479713,
+              "time_in_drawdown_ratio": 0.8607079764250577,
+              "vol_clustering_acf": 0.7411562848026975,
+              "mape": 0.6632866653862451
+            },
+            "fitted_params": {
+              "mu": 0.4515088054990584,
+              "sigma": 0.7197776767359881
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 8,
+            "train_end_date": "2024-09-15",
+            "test_start_date": "2024-09-15",
+            "test_end_date": "2025-09-15",
+            "train_days": 3650,
+            "weight": 0.3064359002552978,
+            "composite_score": 0.8126120624111202,
+            "scoring_metrics": {
+              "ks_statistic": 0.8341698630136987,
+              "qq_divergence": 0.5951314077100459,
+              "tail_index_accuracy": 0.790126023584447,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8262325385756348,
+              "recovery_time_dist": 0.9147890860395045,
+              "time_in_drawdown_ratio": 0.854081457182466,
+              "vol_clustering_acf": 0.6960768883605005,
+              "mape": 0.7446168094900645
+            },
+            "fitted_params": {
+              "mu": 0.4876771179217995,
+              "sigma": 0.7020163825960318
+            },
+            "locked_config": "MLE (no hyperparams)"
+          }
+        ]
+      },
+      "730d": {
+        "weighted_composite": 0.7714807659464855,
+        "n_windows": 8,
+        "elapsed_seconds": 9.6,
+        "window_composites": [
+          0.6715721174030179,
+          0.7616085487684114,
+          0.761413190340069,
+          0.8100728256541404,
+          0.7880267776436918,
+          0.7064250852960537,
+          0.784898925569955,
+          0.7908671214007894
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2018-09-17",
+            "train_days": 730,
+            "weight": 0.027614237491539677,
+            "composite_score": 0.6715721174030179,
+            "scoring_metrics": {
+              "ks_statistic": 0.8883431506849315,
+              "qq_divergence": 0.92477297029255,
+              "tail_index_accuracy": 0.5385660007036834,
+              "percentile_band_coverage": 0.3207174342605259,
+              "drawdown_duration_dist": 0.8155926356863435,
+              "recovery_time_dist": 0.9214087505226746,
+              "time_in_drawdown_ratio": 0.7473197529869937,
+              "vol_clustering_acf": 0.616298917333974,
+              "mape": 0.4929908486325629
+            },
+            "fitted_params": {
+              "mu": 0.14153516805707667,
+              "sigma": 0.6372912470459665
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2019-09-17",
+            "train_days": 1095,
+            "weight": 0.03905242917512701,
+            "composite_score": 0.7616085487684114,
+            "scoring_metrics": {
+              "ks_statistic": 0.9252972602739726,
+              "qq_divergence": 0.9455389234455773,
+              "tail_index_accuracy": 0.5425833862617334,
+              "percentile_band_coverage": 0.8937528499772002,
+              "drawdown_duration_dist": 0.7346489238654661,
+              "recovery_time_dist": 0.7707727525830601,
+              "time_in_drawdown_ratio": 0.9798857425608719,
+              "vol_clustering_acf": 0.5696374875890589,
+              "mape": 0.6697268735655124
+            },
+            "fitted_params": {
+              "mu": 0.6900688675266307,
+              "sigma": 0.6795045097634937
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2020-09-16",
+            "train_days": 1460,
+            "weight": 0.055228474983079354,
+            "composite_score": 0.761413190340069,
+            "scoring_metrics": {
+              "ks_statistic": 0.875113698630137,
+              "qq_divergence": 0.883719865383401,
+              "tail_index_accuracy": 0.4694519299349415,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.6587317287614023,
+              "recovery_time_dist": 0.6904313905461221,
+              "time_in_drawdown_ratio": 0.9372654562907163,
+              "vol_clustering_acf": 0.839758836771569,
+              "mape": 0.6815971360199965
+            },
+            "fitted_params": {
+              "mu": 0.6641957657717531,
+              "sigma": 0.753565166341442
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2021-09-16",
+            "train_days": 1825,
+            "weight": 0.078104858350254,
+            "composite_score": 0.8100728256541404,
+            "scoring_metrics": {
+              "ks_statistic": 0.8939260273972602,
+              "qq_divergence": 0.9464859966289966,
+              "tail_index_accuracy": 0.45808349057480263,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8470594799687535,
+              "recovery_time_dist": 0.8950341057520197,
+              "time_in_drawdown_ratio": 0.944941845346899,
+              "vol_clustering_acf": 0.8433985148250429,
+              "mape": 0.6391493941860903
+            },
+            "fitted_params": {
+              "mu": 0.6224459214872137,
+              "sigma": 0.7453576327289929
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2022-09-16",
+            "train_days": 2190,
+            "weight": 0.11045694996615871,
+            "composite_score": 0.7880267776436918,
+            "scoring_metrics": {
+              "ks_statistic": 0.9288513698630138,
+              "qq_divergence": 0.9727793572935991,
+              "tail_index_accuracy": 0.5608083781786797,
+              "percentile_band_coverage": 0.7736738106095151,
+              "drawdown_duration_dist": 0.8831768681937664,
+              "recovery_time_dist": 0.876956830557967,
+              "time_in_drawdown_ratio": 0.9395003080479442,
+              "vol_clustering_acf": 0.7815113657736216,
+              "mape": 0.5819327121274703
+            },
+            "fitted_params": {
+              "mu": 0.5269341774085844,
+              "sigma": 0.7492123736605322
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2023-09-16",
+            "train_days": 2555,
+            "weight": 0.156209716700508,
+            "composite_score": 0.7064250852960537,
+            "scoring_metrics": {
+              "ks_statistic": 0.8599575342465754,
+              "qq_divergence": 0.8062089263697081,
+              "tail_index_accuracy": 0.49875151387413647,
+              "percentile_band_coverage": 0.9439124487004104,
+              "drawdown_duration_dist": 0.8316828125918619,
+              "recovery_time_dist": 0.8026282235185362,
+              "time_in_drawdown_ratio": 0.9200444146293232,
+              "vol_clustering_acf": 0.7755389947085015,
+              "mape": 0.19754439832387358
+            },
+            "fitted_params": {
+              "mu": 0.6653156367382083,
+              "sigma": 0.7540296128655157
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 6,
+            "train_end_date": "2022-09-16",
+            "test_start_date": "2022-09-16",
+            "test_end_date": "2024-09-15",
+            "train_days": 2920,
+            "weight": 0.22091389993231741,
+            "composite_score": 0.784898925569955,
+            "scoring_metrics": {
+              "ks_statistic": 0.8282205479452055,
+              "qq_divergence": 0.6320962768164701,
+              "tail_index_accuracy": 0.437165032744736,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.9159878607039194,
+              "recovery_time_dist": 0.9360367269233295,
+              "time_in_drawdown_ratio": 0.9053826650324428,
+              "vol_clustering_acf": 0.6687498904654231,
+              "mape": 0.7380549742637446
+            },
+            "fitted_params": {
+              "mu": 0.4703776714798836,
+              "sigma": 0.7455558995473018
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 7,
+            "train_end_date": "2023-09-16",
+            "test_start_date": "2023-09-16",
+            "test_end_date": "2025-09-15",
+            "train_days": 3285,
+            "weight": 0.312419433401016,
+            "composite_score": 0.7908671214007894,
+            "scoring_metrics": {
+              "ks_statistic": 0.8430219178082192,
+              "qq_divergence": 0.6874122228025795,
+              "tail_index_accuracy": 0.5698397533366059,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.9156967599874175,
+              "recovery_time_dist": 0.9162759949183904,
+              "time_in_drawdown_ratio": 0.8794660060752592,
+              "vol_clustering_acf": 0.7568574410380563,
+              "mape": 0.601049323308976
+            },
+            "fitted_params": {
+              "mu": 0.4515088054990584,
+              "sigma": 0.7197776767359881
+            },
+            "locked_config": "MLE (no hyperparams)"
+          }
+        ]
+      },
+      "1460d": {
+        "weighted_composite": 0.7745729687852938,
+        "n_windows": 6,
+        "elapsed_seconds": 14.7,
+        "window_composites": [
+          0.6662923561000909,
+          0.8275163499870961,
+          0.8358307141645108,
+          0.817099879399599,
+          0.8017519236609094,
+          0.7183388501758432
+        ],
+        "window_details": [
+          {
+            "window_num": 0,
+            "train_end_date": "2016-09-17",
+            "test_start_date": "2016-09-17",
+            "test_end_date": "2020-09-16",
+            "train_days": 730,
+            "weight": 0.059173366053299294,
+            "composite_score": 0.6662923561000909,
+            "scoring_metrics": {
+              "ks_statistic": 0.8923715753424657,
+              "qq_divergence": 0.9372885279681278,
+              "tail_index_accuracy": 0.46039623427085474,
+              "percentile_band_coverage": 0.15666590615255913,
+              "drawdown_duration_dist": 0.8147080665843635,
+              "recovery_time_dist": 0.9073162596569038,
+              "time_in_drawdown_ratio": 0.8854478461978065,
+              "vol_clustering_acf": 0.8046370781324829,
+              "mape": 0.44262234764883407
+            },
+            "fitted_params": {
+              "mu": 0.14153516805707667,
+              "sigma": 0.6372912470459665
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 1,
+            "train_end_date": "2017-09-17",
+            "test_start_date": "2017-09-17",
+            "test_end_date": "2021-09-16",
+            "train_days": 1095,
+            "weight": 0.08368377680384356,
+            "composite_score": 0.8275163499870961,
+            "scoring_metrics": {
+              "ks_statistic": 0.9281119863013698,
+              "qq_divergence": 0.9581608708503365,
+              "tail_index_accuracy": 0.5017146144927617,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8784408452589396,
+              "recovery_time_dist": 0.8978052260594002,
+              "time_in_drawdown_ratio": 0.9758191159567607,
+              "vol_clustering_acf": 0.8109871798405833,
+              "mape": 0.6670544986892647
+            },
+            "fitted_params": {
+              "mu": 0.6900688675266307,
+              "sigma": 0.6795045097634937
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 2,
+            "train_end_date": "2018-09-17",
+            "test_start_date": "2018-09-17",
+            "test_end_date": "2022-09-16",
+            "train_days": 1460,
+            "weight": 0.11834673210659859,
+            "composite_score": 0.8358307141645108,
+            "scoring_metrics": {
+              "ks_statistic": 0.9041126712328766,
+              "qq_divergence": 0.9389436370131455,
+              "tail_index_accuracy": 0.5100517216677743,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.9031204781854407,
+              "recovery_time_dist": 0.923119249967499,
+              "time_in_drawdown_ratio": 0.9942652487369252,
+              "vol_clustering_acf": 0.8433104255359724,
+              "mape": 0.6612204854190011
+            },
+            "fitted_params": {
+              "mu": 0.6641957657717531,
+              "sigma": 0.753565166341442
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 3,
+            "train_end_date": "2019-09-17",
+            "test_start_date": "2019-09-17",
+            "test_end_date": "2023-09-16",
+            "train_days": 1825,
+            "weight": 0.16736755360768713,
+            "composite_score": 0.817099879399599,
+            "scoring_metrics": {
+              "ks_statistic": 0.8898263698630137,
+              "qq_divergence": 0.9045723271410331,
+              "tail_index_accuracy": 0.42408321787582326,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8923602439180013,
+              "recovery_time_dist": 0.9216482915232243,
+              "time_in_drawdown_ratio": 0.9928724465335513,
+              "vol_clustering_acf": 0.8419565680731969,
+              "mape": 0.648186005741644
+            },
+            "fitted_params": {
+              "mu": 0.6224459214872137,
+              "sigma": 0.7453576327289929
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 4,
+            "train_end_date": "2020-09-16",
+            "test_start_date": "2020-09-16",
+            "test_end_date": "2024-09-15",
+            "train_days": 2190,
+            "weight": 0.23669346421319717,
+            "composite_score": 0.8017519236609094,
+            "scoring_metrics": {
+              "ks_statistic": 0.880595205479452,
+              "qq_divergence": 0.8903353079296721,
+              "tail_index_accuracy": 0.5046249156700803,
+              "percentile_band_coverage": 0.929348239409841,
+              "drawdown_duration_dist": 0.9032413143900344,
+              "recovery_time_dist": 0.8921724933689543,
+              "time_in_drawdown_ratio": 0.9914530437067959,
+              "vol_clustering_acf": 0.7238064692131172,
+              "mape": 0.6383492367314147
+            },
+            "fitted_params": {
+              "mu": 0.5269341774085844,
+              "sigma": 0.7492123736605322
+            },
+            "locked_config": "MLE (no hyperparams)"
+          },
+          {
+            "window_num": 5,
+            "train_end_date": "2021-09-16",
+            "test_start_date": "2021-09-16",
+            "test_end_date": "2025-09-15",
+            "train_days": 2555,
+            "weight": 0.33473510721537425,
+            "composite_score": 0.7183388501758432,
+            "scoring_metrics": {
+              "ks_statistic": 0.861738698630137,
+              "qq_divergence": 0.737178193530894,
+              "tail_index_accuracy": 0.4404651527481221,
+              "percentile_band_coverage": 1.0,
+              "drawdown_duration_dist": 0.8662505116659844,
+              "recovery_time_dist": 0.8199099769185644,
+              "time_in_drawdown_ratio": 0.9652572055339322,
+              "vol_clustering_acf": 0.7728294476899655,
+              "mape": 0.2464799124187382
+            },
+            "fitted_params": {
+              "mu": 0.6653156367382083,
+              "sigma": 0.7540296128655157
+            },
+            "locked_config": "MLE (no hyperparams)"
+          }
+        ]
+      }
+    },
+    "cross_horizon": {
+      "weighted_composite": 0.771,
+      "horizon_std": 0.0213,
+      "stability_penalty": 0.0021,
+      "final_score": 0.7689
+    }
+  }
+}

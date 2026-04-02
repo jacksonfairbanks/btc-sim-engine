@@ -1,0 +1,44 @@
+[project]
+name = "btc-sim-engine"
+version = "0.1.0"
+description = "Modular, scoring-driven engine for generating and validating Bitcoin price paths"
+authors = [{name = "Jackson Fairbanks", email = ""}]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scipy>=1.12",
+    "statsmodels>=0.14",
+    "arch>=6.2",
+    "optuna>=3.5",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "yfinance>=0.2",
+    "pyarrow>=14.0",
+    "pyyaml>=6.0",
+    "click>=8.1",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ipykernel>=6.25",
+    "jupyter>=1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--cov=. --cov-report=term-missing --cov-report=html"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["data*", "models*", "validation*", "optimization*", "reporting*", "viz*"]

@@ -1,0 +1,41 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# ── Project-specific ──────────────────────────────────
+# Model fit cache (regenerable, just saves refit time)
+results/cache/
+
+# Large raw JSONs (replaced by .gz compressed versions)
+results/experiment_data.json
+results/phase2/config1/phase2_config1_standard.json
+results/phase2/config1/experiment_data.json
+results/phase2/config2/phase2_config2_standard.json
+results/phase2/config6/phase2_config6_standard.json
+results/phase2/config6/experiment_data.json
+results/phase2/config10/phase2_config10_standard.json

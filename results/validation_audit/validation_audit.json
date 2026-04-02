@@ -1,0 +1,155 @@
+{
+  "timestamp": "2026-04-01T15:29:28.697130",
+  "tolerance": 0.0005,
+  "passed": true,
+  "discrepancies": [],
+  "results": {
+    "RBB": {
+      "label": "RBB",
+      "final_score": 0.8109,
+      "weighted_composite": 0.8122,
+      "stability_penalty": 0.0013,
+      "horizon_std": 0.0131,
+      "per_horizon": {
+        "180d": {
+          "weighted_composite": 0.8098498020739999,
+          "n_windows": 37,
+          "config_ok": 37,
+          "elapsed": 41.9
+        },
+        "365d": {
+          "weighted_composite": 0.8221396542038286,
+          "n_windows": 35,
+          "config_ok": 35,
+          "elapsed": 76.5
+        },
+        "730d": {
+          "weighted_composite": 0.8265481711288748,
+          "n_windows": 31,
+          "config_ok": 31,
+          "elapsed": 134.3
+        },
+        "1460d": {
+          "weighted_composite": 0.79275217494636,
+          "n_windows": 23,
+          "config_ok": 23,
+          "elapsed": 210.1
+        }
+      }
+    },
+    "GARCH(1,1)": {
+      "label": "GARCH(1,1)",
+      "final_score": 0.78,
+      "weighted_composite": 0.7821,
+      "stability_penalty": 0.0021,
+      "horizon_std": 0.0211,
+      "per_horizon": {
+        "180d": {
+          "weighted_composite": 0.7972880256258815,
+          "n_windows": 37,
+          "config_ok": 37,
+          "elapsed": 48.6
+        },
+        "365d": {
+          "weighted_composite": 0.8024484545205847,
+          "n_windows": 35,
+          "config_ok": 35,
+          "elapsed": 85.4
+        },
+        "730d": {
+          "weighted_composite": 0.7975715069909032,
+          "n_windows": 31,
+          "config_ok": 31,
+          "elapsed": 142.9
+        },
+        "1460d": {
+          "weighted_composite": 0.7506083574846912,
+          "n_windows": 23,
+          "config_ok": 23,
+          "elapsed": 209.1
+        }
+      }
+    },
+    "GBM": {
+      "label": "GBM",
+      "final_score": 0.763,
+      "weighted_composite": 0.7635,
+      "stability_penalty": 0.0004,
+      "horizon_std": 0.0043,
+      "per_horizon": {
+        "180d": {
+          "weighted_composite": 0.7589138178431589,
+          "n_windows": 37,
+          "config_ok": 37,
+          "elapsed": 29.2
+        },
+        "365d": {
+          "weighted_composite": 0.7704830716219048,
+          "n_windows": 35,
+          "config_ok": 35,
+          "elapsed": 52.9
+        },
+        "730d": {
+          "weighted_composite": 0.7617690339170493,
+          "n_windows": 31,
+          "config_ok": 31,
+          "elapsed": 92.0
+        },
+        "1460d": {
+          "weighted_composite": 0.762482642859388,
+          "n_windows": 23,
+          "config_ok": 23,
+          "elapsed": 136.1
+        }
+      }
+    }
+  },
+  "expected": {
+    "RBB": {
+      "final_score": 0.8109,
+      "per_horizon": {
+        "180d": 0.8098,
+        "365d": 0.8221,
+        "730d": 0.8265,
+        "1460d": 0.7928
+      },
+      "n_windows": {
+        "180d": 37,
+        "365d": 35,
+        "730d": 31,
+        "1460d": 23
+      }
+    },
+    "GARCH(1,1)": {
+      "final_score": 0.78,
+      "per_horizon": {
+        "180d": 0.7973,
+        "365d": 0.8024,
+        "730d": 0.7976,
+        "1460d": 0.7506
+      },
+      "n_windows": {
+        "180d": 37,
+        "365d": 35,
+        "730d": 31,
+        "1460d": 23
+      }
+    },
+    "GBM": {
+      "final_score": 0.763,
+      "per_horizon": {
+        "180d": 0.7589,
+        "365d": 0.7705,
+        "730d": 0.7618,
+        "1460d": 0.7625
+      },
+      "n_windows": {
+        "180d": 37,
+        "365d": 35,
+        "730d": 31,
+        "1460d": 23
+      }
+    }
+  },
+  "total_elapsed": 1258.9
+}
