@@ -4719,537 +4719,559 @@ with tab_prod:
         f"</span>", unsafe_allow_html=True,
     )
 
-    _PROD_MODELS = {
-        "RBB (Block Bootstrap)": {
+    # ── BCR Sidebar Parameters ─────────────────────────────────────────
+    with st.sidebar:
+        st.divider()
+        st.markdown("### BCR Stress Test")
+        bcr_nav = st.number_input("NAV (BTC Treasury $)", value=1_000_000_000, step=100_000_000, format="%d", key="bcr_nav")
+        bcr_ratio = st.number_input("BCR (Coverage Ratio)", value=40.0, step=5.0, format="%.0f", key="bcr_ratio")
+        bcr_div_rate = st.number_input("Dividend Rate (annual %)", value=10.0, step=1.0, format="%.1f", key="bcr_div_rate") / 100.0
+        bcr_cash_months = st.number_input("Cash Reserve (months)", value=0, step=1, min_value=0, max_value=24, key="bcr_cash_months")
+        bcr_btc_fraction = st.number_input("BTC Fraction (%)", value=100.0, step=5.0, min_value=0.0, max_value=100.0, format="%.0f", key="bcr_btc_frac") / 100.0
+        bcr_opex_rate = st.number_input("OpEx (annual % of NAV)", value=0.0, step=0.5, format="%.1f", key="bcr_opex") / 100.0
+        bcr_fail_mode = st.selectbox("Failure Condition", ["BCR < 1", "NAV < PPE Notional"], key="bcr_fail_mode")
+
+    _PROD_MODELS_ALL = {
+        "rbb": {
             "model_name": "regime_block_bootstrap",
             "params": PROD_RBB_PARAMS,
-            "desc": "Stationary block bootstrap — resamples actual historical return sequences",
+            "label": "RBB (Block Bootstrap)",
+            "color": BTC_ORANGE,
+            "desc": "Stationary block bootstrap — resamples actual historical return sequences. Walk-forward: 0.8109.",
         },
-        "GBM (Geometric Brownian Motion)": {
+        "garch": {
+            "model_name": "garch_1_1",
+            "params": {},
+            "label": "GARCH(1,1)",
+            "color": BLUE,
+            "desc": "Parametric volatility clustering (t-distribution, Constant mean). Walk-forward: 0.7800.",
+        },
+        "gbm": {
             "model_name": "gbm",
             "params": {},
-            "desc": "Log-normal random walk — MLE drift and volatility from full history",
+            "label": "GBM (Baseline)",
+            "color": TEXT_DIM,
+            "desc": "Log-normal random walk — MLE drift and volatility. Walk-forward: 0.7630.",
         },
     }
 
     try:
         _prod_get_model, _ProdLoader, _prod_get_px = load_prod_deps()
 
-        _prod_model_choice = st.selectbox(
-            "Model", list(_PROD_MODELS.keys()), index=0, key="prod_model_select",
-        )
-        _prod_cfg = _PROD_MODELS[_prod_model_choice]
-        st.caption(_prod_cfg["desc"])
+        if st.button("Run All 3 Models", type="primary", key="run_prod_all"):
+            loader = _ProdLoader()
+            full_df = loader.load_processed_data()
+            all_returns = full_df["log_return"].values
+            all_prices = full_df["Close"].values
+            initial_price = float(all_prices[-1])
+            data_end_date = str(full_df.index[-1].date())
+            n_training_days = len(all_returns)
 
-        if st.button("Run Production Simulation", type="primary", key="run_prod"):
-            with st.spinner(f"Training {_prod_model_choice} on full history, simulating {PROD_N_SIMS} paths x {PROD_HORIZON}d..."):
-                # Load ALL data — no train/test split
-                loader = _ProdLoader()
-                full_df = loader.load_processed_data()
-                all_returns = full_df["log_return"].values
-                all_prices = full_df["Close"].values
-
-                initial_price = float(all_prices[-1])
-                data_end_date = str(full_df.index[-1].date())
-                n_training_days = len(all_returns)
-
-                # Fit on full history
-                model = _prod_get_model(_prod_cfg["model_name"])
-                if _prod_cfg["params"]:
-                    model.set_params(**_prod_cfg["params"])
-                model.fit(all_returns)
-
-                # Simulate forward
-                sim = model.simulate(
-                    n_simulations=PROD_N_SIMS,
-                    n_steps=PROD_HORIZON,
-                    initial_price=initial_price,
-                    seed=42,
-                )
-
-                # Compute percentiles for fan chart
-                p5 = np.percentile(sim.paths, 5, axis=0)
-                p25 = np.percentile(sim.paths, 25, axis=0)
-                p50 = np.median(sim.paths, axis=0)
-                p75 = np.percentile(sim.paths, 75, axis=0)
-                p95 = np.percentile(sim.paths, 95, axis=0)
-
-                # Compute tail events
-                n_sims = sim.paths.shape[0]
-                dd_50 = dd_75 = dur_180 = dur_365 = 0
-                crash_2014 = crash_2018 = crash_2022 = crash_2020 = 0
-                max_dds_all = []
-                final_prices = sim.paths[:, -1]
-
-                for i in range(n_sims):
-                    path = sim.paths[i]
-                    running_max = np.maximum.accumulate(path)
-                    dd_series = (path - running_max) / running_max
-                    max_dd = float(np.min(dd_series))
-                    max_dds_all.append(max_dd)
-
-                    if max_dd <= -0.50:
-                        dd_50 += 1
-                    if max_dd <= -0.75:
-                        dd_75 += 1
-
-                    # Max drawdown duration
-                    in_dd = False
-                    dd_start = 0
-                    max_dur = 0
-                    for j in range(len(dd_series)):
-                        if dd_series[j] < -0.01:
-                            if not in_dd:
-                                in_dd = True
-                                dd_start = j
-                        else:
-                            if in_dd:
-                                dur = j - dd_start
-                                if dur > max_dur:
-                                    max_dur = dur
-                                in_dd = False
-                    if in_dd:
-                        dur = len(dd_series) - dd_start
-                        if dur > max_dur:
-                            max_dur = dur
-
-                    if max_dur >= 180:
-                        dur_180 += 1
-                    if max_dur >= 365:
-                        dur_365 += 1
-
-                    if max_dd <= -0.85 and max_dur >= 390:
-                        crash_2014 += 1
-                    if max_dd <= -0.84 and max_dur >= 365:
-                        crash_2018 += 1
-                    if max_dd <= -0.77 and max_dur >= 390:
-                        crash_2022 += 1
-                    if len(dd_series) > 30:
-                        early_dd = float(np.min(dd_series[:31]))
-                        if early_dd <= -0.50:
-                            crash_2020 += 1
-
-                # Store in session state
-                # Model-specific metadata
-                _model_meta = {"model_name": _prod_cfg["model_name"], "label": _prod_model_choice}
-                if _prod_cfg["model_name"] == "regime_block_bootstrap":
-                    _model_meta["pool_size"] = len(model._block_pools[0])
-                    _model_meta["specs"] = (
-                        f"Block sampling: geometric, mean 30d | Min block: 5d | Stride: 5d\n"
-                        f"Regime switching: OFF (single pool) | Pool size: {_model_meta['pool_size']} blocks"
-                    )
-                elif _prod_cfg["model_name"] == "gbm":
-                    _model_meta["mu"] = float(model._fitted_params.get("mu", 0))
-                    _model_meta["sigma"] = float(model._fitted_params.get("sigma", 0))
-                    _model_meta["specs"] = (
-                        f"Drift (mu): {_model_meta['mu']:.4f} annualized\n"
-                        f"Volatility (sigma): {_model_meta['sigma']:.4f} annualized\n"
-                        f"Innovation: Normal (log-normal paths) | No vol clustering, no fat tails"
+            all_model_results = {}
+            for mkey, mcfg in _PROD_MODELS_ALL.items():
+                with st.spinner(f"Training {mcfg['label']} on full history..."):
+                    model = _prod_get_model(mcfg["model_name"])
+                    if mcfg["params"]:
+                        model.set_params(**mcfg["params"])
+                    model.fit(all_returns)
+                    sim = model.simulate(
+                        n_simulations=PROD_N_SIMS, n_steps=PROD_HORIZON,
+                        initial_price=initial_price, seed=42,
                     )
 
-                st.session_state["prod_sim"] = {
-                    "initial_price": initial_price,
-                    "data_end_date": data_end_date,
-                    "n_training_days": n_training_days,
-                    "model_meta": _model_meta,
-                    "p5": p5.tolist(),
-                    "p25": p25.tolist(),
-                    "p50": p50.tolist(),
-                    "p75": p75.tolist(),
-                    "p95": p95.tolist(),
-                    "final_prices": final_prices.tolist(),
-                    "max_dds": max_dds_all,
-                    "tail_events": {
-                        "n_paths": n_sims,
-                        "generic": {
-                            "dd_50pct": {"count": dd_50, "pct": round(dd_50 / n_sims * 100, 1)},
-                            "dd_75pct": {"count": dd_75, "pct": round(dd_75 / n_sims * 100, 1)},
-                            "dur_180d": {"count": dur_180, "pct": round(dur_180 / n_sims * 100, 1)},
-                            "dur_365d": {"count": dur_365, "pct": round(dur_365 / n_sims * 100, 1)},
+                    # Percentiles
+                    pcts = {}
+                    for p in [5, 10, 25, 50, 75, 90, 95]:
+                        pcts[f"p{p}"] = np.percentile(sim.paths, p, axis=0).tolist()
+                    pcts["p50"] = np.median(sim.paths, axis=0).tolist()
+
+                    # Tail events
+                    n_sims = sim.paths.shape[0]
+                    dd_50 = dd_75 = dur_180 = dur_365 = 0
+                    crash_2014 = crash_2018 = crash_2022 = crash_2020 = 0
+                    for i in range(n_sims):
+                        path = sim.paths[i]
+                        rm = np.maximum.accumulate(path)
+                        dd_s = (path - rm) / rm
+                        max_dd = float(np.min(dd_s))
+                        if max_dd <= -0.50: dd_50 += 1
+                        if max_dd <= -0.75: dd_75 += 1
+                        in_dd = False; dd_start = 0; max_dur = 0
+                        for j in range(len(dd_s)):
+                            if dd_s[j] < -0.01:
+                                if not in_dd: in_dd = True; dd_start = j
+                            else:
+                                if in_dd:
+                                    d = j - dd_start
+                                    if d > max_dur: max_dur = d
+                                    in_dd = False
+                        if in_dd:
+                            d = len(dd_s) - dd_start
+                            if d > max_dur: max_dur = d
+                        if max_dur >= 180: dur_180 += 1
+                        if max_dur >= 365: dur_365 += 1
+                        if max_dd <= -0.85 and max_dur >= 390: crash_2014 += 1
+                        if max_dd <= -0.84 and max_dur >= 365: crash_2018 += 1
+                        if max_dd <= -0.77 and max_dur >= 390: crash_2022 += 1
+                        if len(dd_s) > 30 and float(np.min(dd_s[:31])) <= -0.50: crash_2020 += 1
+
+                    # Model specs
+                    specs = ""
+                    if mcfg["model_name"] == "regime_block_bootstrap":
+                        specs = f"Block: geometric 30d | Pool: {len(model._block_pools[0])} blocks | Regime: OFF"
+                    elif mcfg["model_name"] == "garch_1_1":
+                        fp = getattr(model, "_fitted_params", {})
+                        specs = f"p=1, q=1, dist=t, Constant | persistence={fp.get('persistence', '?')} | nu={fp.get('nu', '?'):.2f}" if fp.get("nu") else f"p=1, q=1, dist=t, Constant | persistence={fp.get('persistence', '?')}"
+                    elif mcfg["model_name"] == "gbm":
+                        fp = getattr(model, "_fitted_params", {})
+                        specs = f"mu={fp.get('mu', 0):.4f} | sigma={fp.get('sigma', 0):.4f} | Normal innovations"
+
+                    all_model_results[mkey] = {
+                        **pcts,
+                        "paths": sim.paths,
+                        "final_prices": sim.paths[:, -1].tolist(),
+                        "specs": specs,
+                        "tail_events": {
+                            "n_paths": n_sims,
+                            "generic": {
+                                "dd_50pct": {"count": dd_50, "pct": round(dd_50 / n_sims * 100, 1)},
+                                "dd_75pct": {"count": dd_75, "pct": round(dd_75 / n_sims * 100, 1)},
+                                "dur_180d": {"count": dur_180, "pct": round(dur_180 / n_sims * 100, 1)},
+                                "dur_365d": {"count": dur_365, "pct": round(dur_365 / n_sims * 100, 1)},
+                            },
+                            "named_scenarios": {
+                                "2014_mt_gox": {"count": crash_2014, "pct": round(crash_2014 / n_sims * 100, 2)},
+                                "2018_crash": {"count": crash_2018, "pct": round(crash_2018 / n_sims * 100, 2)},
+                                "2022_crash": {"count": crash_2022, "pct": round(crash_2022 / n_sims * 100, 2)},
+                                "2020_flash_crash": {"count": crash_2020, "pct": round(crash_2020 / n_sims * 100, 2)},
+                            },
                         },
-                        "named_scenarios": {
-                            "2014_mt_gox": {"desc": "DD >= 85%, duration >= 13mo", "count": crash_2014, "pct": round(crash_2014 / n_sims * 100, 2)},
-                            "2018_crash": {"desc": "DD >= 84%, duration >= 12mo", "count": crash_2018, "pct": round(crash_2018 / n_sims * 100, 2)},
-                            "2022_crash": {"desc": "DD >= 77%, duration >= 13mo", "count": crash_2022, "pct": round(crash_2022 / n_sims * 100, 2)},
-                            "2020_flash_crash": {"desc": "DD >= 50% within 30d", "count": crash_2020, "pct": round(crash_2020 / n_sims * 100, 2)},
-                        },
-                    },
-                }
+                    }
 
-        # ── Render results if available ────────────────────────────────
-        prod = st.session_state.get("prod_sim")
-        if prod:
-            initial_price = prod["initial_price"]
-            data_end = prod["data_end_date"]
-            final_prices = np.array(prod["final_prices"])
+            st.session_state["prod_all"] = {
+                "initial_price": initial_price,
+                "data_end_date": data_end_date,
+                "n_training_days": n_training_days,
+                "models": {k: {kk: vv for kk, vv in v.items() if kk != "paths"} for k, v in all_model_results.items()},
+                "rbb_paths": all_model_results["rbb"]["paths"],
+            }
+            # Keep backward compat with single-model session state
+            rbb = all_model_results["rbb"]
+            st.session_state["prod_sim"] = {
+                "initial_price": initial_price, "data_end_date": data_end_date,
+                "n_training_days": n_training_days,
+                "model_meta": {"model_name": "regime_block_bootstrap", "label": "RBB (Block Bootstrap)",
+                               "specs": _PROD_MODELS_ALL["rbb"]["desc"]},
+                "p5": rbb["p5"], "p25": rbb["p25"], "p50": rbb["p50"],
+                "p75": rbb["p75"], "p95": rbb["p95"],
+                "final_prices": rbb["final_prices"], "tail_events": rbb["tail_events"],
+            }
 
-            # ── Model Specs ────────────────────────────────────────────
-            _mm = prod.get("model_meta", {})
-            _mm_label = _mm.get("label", "Unknown")
-            _mm_specs = _mm.get("specs", "").replace("\n", "<br>")
-            st.subheader("Model Specifications")
-            st.markdown(
-                f"<div style='background:{PANEL};border:1px solid {BTC_ORANGE};"
-                f"border-radius:6px;padding:12px;margin-bottom:16px;'>"
-                f"<span style='color:{BTC_ORANGE};font-weight:700;font-size:1rem;'>"
-                f"{_mm_label}</span><br>"
-                f"<span style='color:{TEXT_DIM};font-size:0.8rem;'>"
-                f"{_mm_specs}<br>"
-                f"Training data: {prod['n_training_days']:,} days through {data_end}<br>"
-                f"Simulation: {PROD_N_SIMS:,} paths x {PROD_HORIZON}d (4 years) | "
-                f"Starting price: ${initial_price:,.0f}"
-                f"</span></div>",
-                unsafe_allow_html=True,
-            )
+        # ── Render 3-Model Comparison ──────────────────────────────────
+        _prod_all = st.session_state.get("prod_all")
+        if _prod_all:
+            initial_price = _prod_all["initial_price"]
+            data_end = _prod_all["data_end_date"]
+            models_data = _prod_all["models"]
 
-            # ── Summary Statistics ─────────────────────────────────────
-            c1, c2, c3, c4, c5 = st.columns(5)
-            c1.metric("Median Terminal", f"${np.median(final_prices):,.0f}")
-            c2.metric("Mean Terminal", f"${np.mean(final_prices):,.0f}")
-            c3.metric("5th Percentile", f"${np.percentile(final_prices, 5):,.0f}")
-            c4.metric("95th Percentile", f"${np.percentile(final_prices, 95):,.0f}")
-            pct_below = float(np.mean(final_prices < initial_price)) * 100
-            c5.metric("% Below Start", f"{pct_below:.1f}%")
-
-            # ── Fan Chart ──────────────────────────────────────────────
             start_ts = pd.Timestamp(data_end) + pd.Timedelta(days=1)
-            n_pts = len(prod["p50"])
+            n_pts = len(models_data["rbb"]["p50"])
             x_dates = pd.date_range(start=start_ts, periods=n_pts, freq="D").tolist()
 
-            fig_fan = go.Figure()
-            fig_fan.add_trace(go.Scatter(
+            # ── 3-Model Price Fan Chart ────────────────────────────────
+            st.subheader("3-Model Price Path Comparison")
+
+            fig_3m = go.Figure()
+            # RBB 90% CI envelope (reference)
+            rbb_d = models_data["rbb"]
+            fig_3m.add_trace(go.Scatter(
                 x=x_dates + x_dates[::-1],
-                y=prod["p5"] + prod["p95"][::-1],
-                fill="toself", fillcolor="rgba(247,147,26,0.08)",
-                line=dict(color="rgba(0,0,0,0)"), name="90% CI",
+                y=rbb_d["p5"] + rbb_d["p95"][::-1],
+                fill="toself", fillcolor="rgba(247,147,26,0.06)",
+                line=dict(color="rgba(0,0,0,0)"), name="RBB 90% CI", showlegend=True,
             ))
-            fig_fan.add_trace(go.Scatter(
+            fig_3m.add_trace(go.Scatter(
                 x=x_dates + x_dates[::-1],
-                y=prod["p25"] + prod["p75"][::-1],
-                fill="toself", fillcolor="rgba(247,147,26,0.20)",
-                line=dict(color="rgba(0,0,0,0)"), name="50% CI",
+                y=rbb_d["p25"] + rbb_d["p75"][::-1],
+                fill="toself", fillcolor="rgba(247,147,26,0.15)",
+                line=dict(color="rgba(0,0,0,0)"), name="RBB 50% CI", showlegend=True,
             ))
-            fig_fan.add_trace(go.Scatter(
-                x=x_dates, y=prod["p50"], mode="lines",
-                line=dict(color=BTC_ORANGE, width=2.5), name="Median",
-            ))
-            fig_fan.add_hline(
+
+            # Median lines for all 3 models
+            for mkey, mcfg in _PROD_MODELS_ALL.items():
+                md = models_data[mkey]
+                fig_3m.add_trace(go.Scatter(
+                    x=x_dates, y=md["p50"], mode="lines",
+                    line=dict(color=mcfg["color"], width=2.5 if mkey == "rbb" else 2,
+                              dash="solid" if mkey == "rbb" else "dash"),
+                    name=f"{mcfg['label']} Median",
+                ))
+
+            fig_3m.add_hline(
                 y=initial_price, line_dash="dot", line_color=TEXT_DIM, line_width=1,
                 annotation_text=f"Start: ${initial_price:,.0f}",
                 annotation_font_color=TEXT_DIM,
             )
-            fig_fan.update_layout(
-                title=f"4-Year Forward Projection from {data_end}",
+            fig_3m.update_layout(
+                title=f"4-Year Forward Projection — All Models (from {data_end})",
                 xaxis_title="", yaxis_title="Price (USD)", yaxis_type="log",
                 height=600, **PLOTLY_LAYOUT,
             )
-            st.plotly_chart(fig_fan, use_container_width=True)
+            st.plotly_chart(fig_3m, use_container_width=True)
 
-            # ── Tail Event Summary ─────────────────────────────────────
-            st.subheader("Tail Event Summary — Forward Projection")
-            te = prod["tail_events"]
-            n_paths = te["n_paths"]
-            gen = te["generic"]
+            # ── Summary Stats Table ────────────────────────────────────
+            st.subheader("Terminal Price Distribution (4-Year)")
+            summary_rows = []
+            for mkey, mcfg in _PROD_MODELS_ALL.items():
+                fp = np.array(models_data[mkey]["final_prices"])
+                summary_rows.append({
+                    "Model": mcfg["label"],
+                    "Median": f"${np.median(fp):,.0f}",
+                    "Mean": f"${np.mean(fp):,.0f}",
+                    "P5": f"${np.percentile(fp, 5):,.0f}",
+                    "P95": f"${np.percentile(fp, 95):,.0f}",
+                    "% Below Start": f"{float(np.mean(fp < initial_price)) * 100:.1f}%",
+                    "WF Score": {"rbb": "0.8109", "garch": "0.7800", "gbm": "0.7630"}[mkey],
+                })
+            st.table(pd.DataFrame(summary_rows).set_index("Model"))
 
-            tc1, tc2, tc3, tc4 = st.columns(4)
-            for col, (key, label) in zip(
-                [tc1, tc2, tc3, tc4],
-                [("dd_50pct", "DD >= 50%"), ("dd_75pct", "DD >= 75%"),
-                 ("dur_180d", "Duration >= 180d"), ("dur_365d", "Duration >= 365d")],
-            ):
-                g = gen[key]
-                col.metric(label, f"{g['count']:,} / {n_paths:,} ({g['pct']}%)")
-
-            st.markdown(
-                f"<div style='margin-top:12px;color:{TEXT_DIM};font-size:0.8rem;'>"
-                f"Named stress scenarios — can the model produce known historical crash patterns "
-                f"in forward projection?</div>",
-                unsafe_allow_html=True,
-            )
-            named = te["named_scenarios"]
-            for key, scenario in named.items():
-                count = scenario["count"]
-                pct = scenario["pct"]
-                desc = scenario["desc"]
-                name = key.replace("_", " ").title()
-                if count == 0:
-                    color = RED
-                    note = " — model cannot produce this scenario"
-                else:
-                    color = GREEN if pct >= 1.0 else BTC_ORANGE
-                    note = ""
-                st.markdown(
-                    f"<div style='padding:6px 0;border-bottom:1px solid {GRID};'>"
-                    f"<span style='font-weight:600;'>{name}</span>"
-                    f"<span style='color:{TEXT_DIM};font-size:0.8rem;'> — {desc}</span><br>"
-                    f"<span style='color:{color};font-size:1.1rem;font-weight:700;'>"
-                    f"{count:,} / {n_paths:,} ({pct}%)</span>"
-                    f"<span style='color:{TEXT_DIM};font-size:0.8rem;'>{note}</span>"
-                    f"</div>",
-                    unsafe_allow_html=True,
-                )
-
-            # What This Means block
-            _prod_ns = te["named_scenarios"]
-            _prod_c22 = _prod_ns["2022_crash"]
-            _prod_c18 = _prod_ns["2018_crash"]
-            _prod_cmg = _prod_ns["2014_mt_gox"]
-
-            st.markdown("")
-            st.markdown(
-                f"<div style='background:{PANEL};border-left:3px solid {BTC_ORANGE};"
-                f"border-radius:4px;padding:14px;margin-top:12px;'>"
-                f"<span style='color:{BTC_ORANGE};font-weight:700;font-size:0.95rem;'>"
-                f"What This Means</span><br><br>"
-                f"<span style='color:{TEXT};font-size:0.82rem;'>"
-                f"Of {n_paths:,} simulated 4-year paths starting from today's BTC price:</span>"
-                f"<ul style='color:{TEXT};font-size:0.82rem;margin:8px 0;padding-left:20px;'>"
-                f"<li><b>~{_prod_c22['pct']}%</b> produce a drawdown matching the <b>2022 crash</b> profile: "
-                f"77%+ decline lasting at least 13 months. "
-                f"Nearly 1 in {max(1, round(n_paths / max(_prod_c22['count'], 1)))} paths.</li>"
-                f"<li><b>~{_prod_c18['pct']}%</b> produce a drawdown matching the <b>2018 crash</b>: "
-                f"84%+ decline lasting over 12 months. "
-                f"Roughly 1 in {max(1, round(n_paths / max(_prod_c18['count'], 1)))} paths.</li>"
-                f"<li><b>~{_prod_cmg['pct']}%</b> produce a drawdown matching the <b>2014 Mt. Gox collapse</b>: "
-                f"85%+ decline lasting over 13 months. "
-                f"The most severe historical crash pattern still appears in roughly "
-                f"1 in {max(1, round(n_paths / max(_prod_cmg['count'], 1)))} paths.</li>"
-                f"</ul>"
-                f"<span style='color:{TEXT_DIM};font-size:0.78rem;font-style:italic;'>"
-                f"These are not hypothetical scenarios imposed on the model — they emerge naturally "
-                f"from resampling actual historical BTC return sequences. The model was not told about "
-                f"these crashes. It reproduces them because the return blocks that caused them are in the pool."
-                f"</span></div>",
-                unsafe_allow_html=True,
-            )
-
-            # ── BCR Stress Overlay (placeholder) ───────────────────────
-            st.divider()
-            st.subheader("BCR Threshold Overlay")
-            st.info("BCR threshold overlay coming in Phase 3. Will project BCR ratios "
-                    "across simulated price paths to identify stress windows where "
-                    "digital credit instruments breach coverage thresholds.")
-
-            # ── Validation Context ─────────────────────────────────────
-            st.divider()
-            st.subheader("Validation Context — Walk-Forward Performance at 1460d")
-            st.markdown(
-                f"<span style='color:{TEXT_DIM};font-size:0.85rem;'>"
-                f"How well did this same model+config perform on historical out-of-sample windows? "
-                f"The forward projection above uses the same locked config scored below.</span>",
-                unsafe_allow_html=True,
-            )
-
-            _val_run = None
-            for r in all_runs:
-                if r["model"] == "regime_block_bootstrap" and r["horizon"] == "1460d":
-                    _val_run = r
-                    break
-
-            _gbm_1460 = None
-            for r in all_runs:
-                if r["model"] == "gbm" and r["horizon"] == "1460d":
-                    _gbm_1460 = r["walk_forward"]["weighted_composite"]
-                    break
-
-            if _val_run:
-                _val_wf = _val_run["walk_forward"]
-                _val_windows = _val_wf.get("windows", [])
-
-                vc1, vc2, vc3 = st.columns(3)
-                vc1.metric("WF Composite (1460d)", f"{_val_wf['weighted_composite']:.4f}")
-                vc2.metric("Windows Evaluated", str(len(_val_windows)))
-                if _gbm_1460:
-                    delta = _val_wf["weighted_composite"] - _gbm_1460
-                    vc3.metric("vs GBM", f"{delta:+.4f}")
-
-                _val_dist = _val_run.get("final_scorecard", {}).get("distributions", {})
-                _val_te = _val_dist.get("tail_events")
-                if _val_te:
-                    st.markdown("**Walk-forward OOS tail events (final scorecard, 1460d):**")
-                    _val_n = _val_te["n_paths"]
-                    _val_gen = _val_te["generic"]
-                    _val_named = _val_te["named_scenarios"]
-
-                    vt1, vt2, vt3, vt4 = st.columns(4)
-                    for col, (key, label) in zip(
-                        [vt1, vt2, vt3, vt4],
-                        [("dd_50pct", "DD >= 50%"), ("dd_75pct", "DD >= 75%"),
-                         ("dur_180d", "Dur >= 180d"), ("dur_365d", "Dur >= 365d")],
-                    ):
-                        g = _val_gen[key]
-                        col.metric(f"WF: {label}", f"{g['pct']}%")
-
-                    st.markdown("")
-                    st.markdown("**Forward Projection vs Walk-Forward OOS:**")
-                    _cmp_data = []
-                    for key in ["2014_mt_gox", "2018_crash", "2022_crash", "2020_flash_crash"]:
-                        fwd = te["named_scenarios"][key]
-                        wf = _val_named[key]
-                        _cmp_data.append({
-                            "Scenario": key.replace("_", " ").title(),
-                            "Forward (5000 paths)": f"{fwd['pct']}%",
-                            "WF OOS (5000 paths)": f"{wf['pct']}%",
-                        })
-                    st.table(pd.DataFrame(_cmp_data))
-
-                if _val_windows:
-                    most_recent = _val_windows[-1]
+            # ── Model Specs ────────────────────────────────────────────
+            with st.expander("Model Specifications"):
+                for mkey, mcfg in _PROD_MODELS_ALL.items():
+                    md = models_data[mkey]
                     st.markdown(
-                        f"**Most recent WF window:** "
-                        f"{most_recent.get('test_start_date','?')} to "
-                        f"{most_recent.get('test_end_date','?')} — "
-                        f"composite: {most_recent.get('composite_score', 0):.4f} "
-                        f"(weight: {most_recent.get('weight', 0):.4f})"
+                        f"<div style='background:{PANEL};border-left:3px solid {mcfg['color']};"
+                        f"border-radius:4px;padding:10px;margin-bottom:8px;'>"
+                        f"<span style='color:{mcfg['color']};font-weight:700;'>{mcfg['label']}</span><br>"
+                        f"<span style='color:{TEXT_DIM};font-size:0.8rem;'>{md['specs']}</span>"
+                        f"</div>", unsafe_allow_html=True,
                     )
-            else:
-                st.warning("No 1460d walk-forward data found. Run an experiment first.")
 
-            # ── Export Signal ──────────────────────────────────────────
+            # ── Tail Event Comparison ──────────────────────────────────
+            st.subheader("Tail Event Comparison — Forward Projection")
+            te_rows = []
+            for key, label in [("dd_50pct", "DD >= 50%"), ("dd_75pct", "DD >= 75%"),
+                                ("dur_180d", "Duration >= 180d"), ("dur_365d", "Duration >= 365d")]:
+                row = {"Event": label}
+                for mkey, mcfg in _PROD_MODELS_ALL.items():
+                    te = models_data[mkey]["tail_events"]["generic"][key]
+                    row[mcfg["label"]] = f"{te['pct']}%"
+                te_rows.append(row)
+            for key in ["2014_mt_gox", "2018_crash", "2022_crash", "2020_flash_crash"]:
+                row = {"Event": key.replace("_", " ").title()}
+                for mkey, mcfg in _PROD_MODELS_ALL.items():
+                    sc = models_data[mkey]["tail_events"]["named_scenarios"][key]
+                    row[mcfg["label"]] = f"{sc['pct']}%"
+                te_rows.append(row)
+            st.table(pd.DataFrame(te_rows).set_index("Event"))
+
+            # ══════════════════════════════════════════════════════════
+            # BCR STRESS TEST
+            # ══════════════════════════════════════════════════════════
             st.divider()
-            st.subheader("Export Production Signal")
+            st.header("BCR Stress Test — Perpetual Preferred Solvency")
             st.markdown(
                 f"<span style='color:{TEXT_DIM};font-size:0.85rem;'>"
-                f"Condensed projection summary for LLM consumption. "
-                f"Includes config, statistics, tail events, and validation context.</span>",
+                f"Bitcoin-collateralized perpetual preferred product solvency analysis. "
+                f"Deterministic cash-flow simulation over {PROD_N_SIMS:,} RBB price paths. "
+                f"Configure parameters in the sidebar.</span>",
                 unsafe_allow_html=True,
             )
 
-            def _build_prod_signal() -> str:
-                sig = []
-                sig.append(f"# BTC 4-Year Forward Projection ({prod['data_end_date']})")
-                sig.append("")
-                sig.append("## Configuration")
-                sig.append(f"- **Model:** {_mm.get('label', 'Unknown')}")
-                for spec_line in _mm.get("specs", "").split("\n"):
-                    if spec_line.strip():
-                        sig.append(f"- {spec_line.strip()}")
-                sig.append(f"- **Training data:** {prod['n_training_days']:,} days through {prod['data_end_date']}")
-                sig.append(f"- **Simulation:** {PROD_N_SIMS:,} paths x {PROD_HORIZON}d (4 years)")
-                sig.append(f"- **Starting price:** ${prod['initial_price']:,.0f}")
-                sig.append("")
+            # ── Derived values ─────────────────────────────────────────
+            _bcr_div_rate = bcr_div_rate
+            _bcr_ppe_leverage = 1.0 / (bcr_ratio * _bcr_div_rate) if (bcr_ratio * _bcr_div_rate) > 0 else 0
+            _bcr_ppe_notional = bcr_nav * _bcr_ppe_leverage
+            _bcr_annual_dividend = _bcr_ppe_notional * _bcr_div_rate
+            _bcr_annual_opex = bcr_nav * bcr_opex_rate
+            _bcr_monthly_dividend = _bcr_annual_dividend / 12.0
+            _bcr_monthly_opex = _bcr_annual_opex / 12.0
+            _bcr_monthly_obligation = _bcr_monthly_dividend + _bcr_monthly_opex
 
-                sig.append("## Terminal Price Distribution (4-year)")
-                sig.append(f"- **Median:** ${np.median(final_prices):,.0f}")
-                sig.append(f"- **Mean:** ${np.mean(final_prices):,.0f}")
-                sig.append(f"- **5th percentile:** ${np.percentile(final_prices, 5):,.0f}")
-                sig.append(f"- **25th percentile:** ${np.percentile(final_prices, 25):,.0f}")
-                sig.append(f"- **75th percentile:** ${np.percentile(final_prices, 75):,.0f}")
-                sig.append(f"- **95th percentile:** ${np.percentile(final_prices, 95):,.0f}")
-                sig.append(f"- **% paths below starting price:** {pct_below:.1f}%")
-                sig.append("")
+            # Display derived values
+            dc1, dc2, dc3, dc4 = st.columns(4)
+            dc1.metric("PPE Notional", f"${_bcr_ppe_notional:,.0f}")
+            dc2.metric("Annual Dividend", f"${_bcr_annual_dividend:,.0f}")
+            dc3.metric("Monthly Obligation", f"${_bcr_monthly_obligation:,.0f}")
+            dc4.metric("Starting BCR", f"{bcr_ratio:.0f}x")
 
-                sig.append("## Price Path Percentile Bands")
-                sig.append("| Timepoint | P5 | P25 | Median | P75 | P95 |")
-                sig.append("|-----------|-----|------|--------|------|------|")
-                for day_idx, label in [(89, "90d"), (179, "180d"), (364, "365d"),
-                                        (729, "730d"), (1094, "1095d"), (1459, "1460d")]:
-                    if day_idx < len(prod["p50"]):
-                        sig.append(
-                            f"| {label} | ${prod['p5'][day_idx]:,.0f} | "
-                            f"${prod['p25'][day_idx]:,.0f} | "
-                            f"${prod['p50'][day_idx]:,.0f} | "
-                            f"${prod['p75'][day_idx]:,.0f} | "
-                            f"${prod['p95'][day_idx]:,.0f} |"
-                        )
-                sig.append("")
+            # ── Run solvency on RBB paths ──────────────────────────────
+            rbb_paths = _prod_all.get("rbb_paths")
+            if rbb_paths is not None:
+                n_sims_bcr = rbb_paths.shape[0]
+                n_days = rbb_paths.shape[1]
+                n_months = n_days // 30
 
-                sig.append("## Tail Event Summary (forward projection)")
-                _te = prod["tail_events"]
-                _n = _te["n_paths"]
-                _gen = _te["generic"]
-                sig.append(f"| Event | Count | Rate |")
-                sig.append(f"|-------|-------|------|")
-                for key, label in [("dd_50pct", "DD >= 50%"), ("dd_75pct", "DD >= 75%"),
-                                    ("dur_180d", "Duration >= 180d"), ("dur_365d", "Duration >= 365d")]:
-                    g = _gen[key]
-                    sig.append(f"| {label} | {g['count']:,} / {_n:,} | {g['pct']}% |")
-                sig.append("")
+                # Monthly price snapshots (every 30th day)
+                month_indices = [min(30 * (m + 1) - 1, n_days - 1) for m in range(n_months)]
+                monthly_prices = rbb_paths[:, month_indices]  # (n_sims, n_months)
 
-                sig.append("### Named Stress Scenarios")
-                sig.append(f"| Scenario | Description | Count | Rate |")
-                sig.append(f"|----------|-------------|-------|------|")
-                for key, sc in _te["named_scenarios"].items():
-                    flag = " **ZERO**" if sc["count"] == 0 else ""
-                    sig.append(
-                        f"| {key.replace('_', ' ').title()} | {sc['desc']} | "
-                        f"{sc['count']:,} / {_n:,} | {sc['pct']}%{flag} |"
+                # Per-path solvency simulation
+                all_bcr_series = np.zeros((n_sims_bcr, n_months))
+                all_nav_series = np.zeros((n_sims_bcr, n_months))
+                failed = np.zeros(n_sims_bcr, dtype=bool)
+                failure_month = np.full(n_sims_bcr, n_months + 1, dtype=int)  # n_months+1 = never failed
+                min_bcr = np.zeros(n_sims_bcr)
+                terminal_bcr = np.zeros(n_sims_bcr)
+
+                for i in range(n_sims_bcr):
+                    btc_holdings = bcr_nav / initial_price  # BTC count
+                    cash = bcr_cash_months * _bcr_monthly_obligation  # separate from NAV
+                    path_failed = False
+
+                    for m in range(n_months):
+                        price = monthly_prices[i, m]
+                        btc_value = btc_holdings * price
+
+                        # Pay monthly obligation
+                        obligation = _bcr_monthly_obligation
+                        btc_obligation = obligation * bcr_btc_fraction
+                        external_covered = obligation * (1.0 - bcr_btc_fraction)
+
+                        # Pay from cash first, then sell BTC
+                        if cash >= btc_obligation:
+                            cash -= btc_obligation
+                        else:
+                            btc_sell_amount = btc_obligation - cash
+                            cash = 0.0
+                            if price > 0:
+                                btc_to_sell = btc_sell_amount / price
+                                btc_holdings -= btc_to_sell
+
+                        # Recalculate
+                        btc_value = btc_holdings * price
+                        # BCR = BTC reserves ($) / annual dividend obligations only
+                        current_bcr = btc_value / _bcr_annual_dividend if _bcr_annual_dividend > 0 else float("inf")
+                        all_bcr_series[i, m] = current_bcr
+                        all_nav_series[i, m] = btc_value
+
+                        # Check failure
+                        if not path_failed:
+                            if bcr_fail_mode == "BCR < 1":
+                                if current_bcr < 1.0:
+                                    path_failed = True
+                                    failure_month[i] = m + 1
+                            else:
+                                if btc_value < _bcr_ppe_notional:
+                                    path_failed = True
+                                    failure_month[i] = m + 1
+
+                    failed[i] = path_failed
+                    min_bcr[i] = np.min(all_bcr_series[i, :])
+                    terminal_bcr[i] = all_bcr_series[i, -1]
+
+                # ── BCR Fan Chart (HERO CHART) ─────────────────────────
+                st.subheader("BCR Trajectory — Percentile Bands")
+                bcr_p5 = np.percentile(all_bcr_series, 5, axis=0)
+                bcr_p25 = np.percentile(all_bcr_series, 25, axis=0)
+                bcr_p50 = np.median(all_bcr_series, axis=0)
+                bcr_p75 = np.percentile(all_bcr_series, 75, axis=0)
+                bcr_p95 = np.percentile(all_bcr_series, 95, axis=0)
+
+                month_dates = [start_ts + pd.Timedelta(days=30 * (m + 1)) for m in range(n_months)]
+
+                fig_bcr = go.Figure()
+                fig_bcr.add_trace(go.Scatter(
+                    x=month_dates + month_dates[::-1],
+                    y=bcr_p5.tolist() + bcr_p95.tolist()[::-1],
+                    fill="toself", fillcolor="rgba(247,147,26,0.08)",
+                    line=dict(color="rgba(0,0,0,0)"), name="90% CI (P5-P95)",
+                ))
+                fig_bcr.add_trace(go.Scatter(
+                    x=month_dates + month_dates[::-1],
+                    y=bcr_p25.tolist() + bcr_p75.tolist()[::-1],
+                    fill="toself", fillcolor="rgba(247,147,26,0.20)",
+                    line=dict(color="rgba(0,0,0,0)"), name="50% CI (P25-P75)",
+                ))
+                fig_bcr.add_trace(go.Scatter(
+                    x=month_dates, y=bcr_p50.tolist(), mode="lines",
+                    line=dict(color=BTC_ORANGE, width=2.5), name="Median BCR",
+                ))
+                # Failure threshold
+                fig_bcr.add_hline(
+                    y=1.0, line_dash="dash", line_color=RED, line_width=2,
+                    annotation_text="BCR = 1 (Failure Threshold)",
+                    annotation_font_color=RED, annotation_font_size=12,
+                )
+                # Cap y-axis for readability
+                y_max = min(float(np.percentile(bcr_p95, 95)) * 1.2, float(bcr_p95.max()) * 1.1)
+                y_max = max(y_max, bcr_ratio * 1.5)
+                fig_bcr.update_layout(
+                    title=f"Bitcoin Coverage Ratio Over {n_months} Months — {n_sims_bcr:,} Paths",
+                    xaxis_title="", yaxis_title="BCR (BTC Value / Annual Dividend)",
+                    yaxis=dict(range=[0, y_max], gridcolor=GRID, zerolinecolor=GRID,
+                               tickfont=dict(color="#bbbbbb")),
+                    height=650, **PLOTLY_LAYOUT,
+                )
+                st.plotly_chart(fig_bcr, use_container_width=True)
+
+                # ── Summary Metrics ────────────────────────────────────
+                n_failed = int(np.sum(failed))
+                fail_pct = n_failed / n_sims_bcr * 100
+
+                sm1, sm2, sm3, sm4, sm5 = st.columns(5)
+                sm1.metric("Failure Probability", f"{fail_pct:.1f}%",
+                           delta=f"{n_failed:,} / {n_sims_bcr:,} paths", delta_color="inverse")
+                sm2.metric("Median Terminal BCR", f"{np.median(terminal_bcr):.1f}x")
+                sm3.metric("P5 Terminal BCR", f"{np.percentile(terminal_bcr, 5):.1f}x")
+                sm4.metric("P95 Terminal BCR", f"{np.percentile(terminal_bcr, 95):.1f}x")
+                # Months of runway at current drain rate
+                monthly_btc_drain = (_bcr_monthly_obligation * bcr_btc_fraction) / initial_price if initial_price > 0 else 0
+                starting_btc = bcr_nav / initial_price
+                runway_months = int(starting_btc / monthly_btc_drain) if monthly_btc_drain > 0 else 999
+                sm5.metric("Months of Runway", f"{runway_months}",
+                           delta="at constant price", delta_color="off")
+
+                # ── Min BCR Distribution ───────────────────────────────
+                st.subheader("Minimum BCR Distribution")
+                bcr_col1, bcr_col2 = st.columns(2)
+
+                with bcr_col1:
+                    fig_min_hist = go.Figure()
+                    # Cap for display
+                    min_bcr_display = np.clip(min_bcr, 0, np.percentile(min_bcr, 99))
+                    fig_min_hist.add_trace(go.Histogram(
+                        x=min_bcr_display, nbinsx=60,
+                        marker_color=BTC_ORANGE, opacity=0.7,
+                    ))
+                    fig_min_hist.add_vline(x=1.0, line_dash="dash", line_color=RED, line_width=2,
+                                           annotation_text="BCR=1", annotation_font_color=RED)
+                    fig_min_hist.update_layout(
+                        title="Min BCR Reached Per Path", xaxis_title="Minimum BCR",
+                        yaxis_title="Count", height=400, **PLOTLY_LAYOUT,
                     )
-                sig.append("")
+                    st.plotly_chart(fig_min_hist, use_container_width=True)
 
-                if _val_run:
-                    _vwf = _val_run["walk_forward"]
-                    sig.append("## Validation Context (walk-forward OOS, 1460d)")
-                    sig.append(f"- **Walk-forward composite:** {_vwf['weighted_composite']:.4f}")
-                    sig.append(f"- **Windows evaluated:** {len(_vwf.get('windows', []))}")
-                    if _gbm_1460:
-                        sig.append(f"- **vs GBM baseline:** {_vwf['weighted_composite'] - _gbm_1460:+.4f}")
-                    sig.append(f"- **Config:** single-pool block bootstrap, geometric bl=30, regime OFF")
-                    sig.append(f"- **Scoring:** 9 metrics, path-dynamics weighted (35% path dynamics, 25% tail risk, 15% distributional, 10% vol clustering, 15% MAPE)")
+                with bcr_col2:
+                    min_bcr_pcts = [1, 5, 10, 25, 50, 75, 90, 95, 99]
+                    pct_table = [{"Percentile": f"P{p}", "Min BCR": f"{np.percentile(min_bcr, p):.2f}x"}
+                                 for p in min_bcr_pcts]
+                    pct_table.append({"Percentile": "% Below 1x", "Min BCR": f"{float(np.mean(min_bcr < 1)) * 100:.1f}%"})
+                    pct_table.append({"Percentile": "% Below 5x", "Min BCR": f"{float(np.mean(min_bcr < 5)) * 100:.1f}%"})
+                    pct_table.append({"Percentile": "% Below 10x", "Min BCR": f"{float(np.mean(min_bcr < 10)) * 100:.1f}%"})
+                    st.table(pd.DataFrame(pct_table).set_index("Percentile"))
 
-                    _vd = _val_run.get("final_scorecard", {}).get("distributions", {}).get("tail_events")
-                    if _vd:
-                        sig.append("")
-                        sig.append("### Forward vs Walk-Forward Tail Rates")
-                        sig.append("| Scenario | Forward | WF OOS | Note |")
-                        sig.append("|----------|---------|--------|------|")
-                        for key in ["2014_mt_gox", "2018_crash", "2022_crash", "2020_flash_crash"]:
-                            fwd = _te["named_scenarios"][key]
-                            wf_sc = _vd["named_scenarios"][key]
-                            diff = fwd["pct"] - wf_sc["pct"]
-                            note = f"{diff:+.1f}pp" if abs(diff) >= 0.1 else "~same"
-                            sig.append(
-                                f"| {key.replace('_', ' ').title()} | {fwd['pct']}% | {wf_sc['pct']}% | {note} |"
-                            )
-                        for key, label in [("dd_50pct", "DD >= 50%"), ("dd_75pct", "DD >= 75%"),
-                                            ("dur_180d", "Dur >= 180d"), ("dur_365d", "Dur >= 365d")]:
-                            fwd_g = _gen[key]
-                            wf_g = _vd["generic"][key]
-                            diff = fwd_g["pct"] - wf_g["pct"]
-                            note = f"{diff:+.1f}pp" if abs(diff) >= 0.1 else "~same"
-                            sig.append(f"| {label} | {fwd_g['pct']}% | {wf_g['pct']}% | {note} |")
+                # ── Cumulative Failure Curve ───────────────────────────
+                st.subheader("Cumulative Failure Probability by Month")
+                cum_fail = np.zeros(n_months)
+                for m in range(n_months):
+                    cum_fail[m] = float(np.sum(failure_month <= (m + 1))) / n_sims_bcr * 100
 
-                    if _val_windows:
-                        mr = _val_windows[-1]
-                        sig.append("")
-                        sig.append(
-                            f"**Most recent WF window:** {mr.get('test_start_date','?')} to "
-                            f"{mr.get('test_end_date','?')} — composite {mr.get('composite_score',0):.4f}"
-                        )
+                fig_cum = go.Figure()
+                fig_cum.add_trace(go.Scatter(
+                    x=list(range(1, n_months + 1)), y=cum_fail.tolist(),
+                    mode="lines+markers", line=dict(color=RED, width=2),
+                    marker=dict(size=4), name="Cumulative Failure %",
+                ))
+                fig_cum.update_layout(
+                    title="Probability of Having Failed by Month X",
+                    xaxis_title="Month", yaxis_title="Cumulative Failure (%)",
+                    height=400, **PLOTLY_LAYOUT,
+                )
+                st.plotly_chart(fig_cum, use_container_width=True)
 
-                sig.append("")
-                sig.append("## Methodology Notes")
-                if _mm.get("model_name") == "regime_block_bootstrap":
-                    sig.append("- The block bootstrap resamples actual historical daily return sequences — no parametric assumptions on return distribution")
-                    sig.append("- Geometric block length sampling avoids artificial periodicity (blocks drawn from geometric distribution centered on 30d)")
-                    sig.append("- No regime switching — Phase 2 testing showed regime conditioning systematically suppresses tail events")
-                    sig.append(f"- Production config scored 0.8109 cross-horizon final score, +6.3% vs GBM baseline")
-                elif _mm.get("model_name") == "gbm":
-                    sig.append("- GBM assumes log-normal returns with constant drift and volatility — no fat tails, no volatility clustering")
-                    sig.append("- Serves as the baseline control — if a model can't beat GBM, it's not worth its complexity")
-                    sig.append("- GBM systematically underestimates tail risk for BTC due to thin-tailed normal innovations")
-                sig.append("- Walk-forward validation used expanding windows with exponential recency weighting (2-year half-life)")
-                sig.append("- This forward projection trains on ALL available data (no holdout)")
-
-                return "\n".join(sig)
-
-            _prod_signal = _build_prod_signal()
-            _prod_date = prod["data_end_date"]
-
-            st.download_button(
-                "Download Production Signal",
-                data=_prod_signal,
-                file_name=f"btc_projection_{_prod_date}.md",
-                mime="text/markdown",
-                key="download_prod_signal",
-            )
-            with st.expander("Preview Signal"):
+                # ── Sensitivity Heatmap ────────────────────────────────
+                st.subheader("Sensitivity Heatmap — Failure Probability")
                 st.markdown(
-                    f"<pre style='background:#111;color:#e0e0e0;padding:1rem;"
-                    f"font-size:0.75rem;max-height:500px;overflow-y:auto;'>"
-                    f"{_prod_signal}</pre>",
+                    f"<span style='color:{TEXT_DIM};font-size:0.85rem;'>"
+                    f"Failure probability across BCR x Dividend Rate combinations. "
+                    f"Uses the same {n_sims_bcr:,} RBB price paths.</span>",
                     unsafe_allow_html=True,
                 )
+
+                _heat_bcrs = [10, 20, 30, 40, 50, 60, 80, 100]
+                _heat_divs = [0.05, 0.08, 0.10, 0.12, 0.15]
+                _heat_z = np.zeros((len(_heat_divs), len(_heat_bcrs)))
+
+                for di, dr in enumerate(_heat_divs):
+                    for bi, br in enumerate(_heat_bcrs):
+                        h_ppe_lev = 1.0 / (br * dr) if (br * dr) > 0 else 0
+                        h_ppe_not = bcr_nav * h_ppe_lev
+                        h_ann_div = h_ppe_not * dr
+                        h_ann_opex = bcr_nav * bcr_opex_rate
+                        h_monthly = (h_ann_div / 12.0) + (h_ann_opex / 12.0)
+
+                        n_fail = 0
+                        for i in range(n_sims_bcr):
+                            btc_h = bcr_nav / initial_price
+                            cash_h = bcr_cash_months * h_monthly
+                            path_ok = True
+                            for m in range(n_months):
+                                price = monthly_prices[i, m]
+                                btc_obl = h_monthly * bcr_btc_fraction
+                                if cash_h >= btc_obl:
+                                    cash_h -= btc_obl
+                                else:
+                                    sell_amt = btc_obl - cash_h
+                                    cash_h = 0.0
+                                    if price > 0:
+                                        btc_h -= sell_amt / price
+                                btc_val = btc_h * price
+                                cur_bcr = btc_val / h_ann_div if h_ann_div > 0 else float("inf")
+                                if bcr_fail_mode == "BCR < 1":
+                                    if cur_bcr < 1.0:
+                                        path_ok = False
+                                        break
+                                else:
+                                    if btc_val < h_ppe_not:
+                                        path_ok = False
+                                        break
+                            if not path_ok:
+                                n_fail += 1
+                        _heat_z[di, bi] = n_fail / n_sims_bcr * 100
+
+                fig_heat = go.Figure(data=go.Heatmap(
+                    z=_heat_z,
+                    x=[f"{b}x" for b in _heat_bcrs],
+                    y=[f"{d*100:.0f}%" for d in _heat_divs],
+                    colorscale=[[0, "#0a0a0a"], [0.01, "#10b981"], [0.05, "#eab308"],
+                                [0.2, "#f7931a"], [0.5, "#ef4444"], [1.0, "#7f1d1d"]],
+                    text=[[f"{v:.1f}%" for v in row] for row in _heat_z],
+                    texttemplate="%{text}",
+                    textfont=dict(size=12, color="#ffffff"),
+                    colorbar=dict(title="Fail %", tickfont=dict(color="#cccccc"),
+                                  titlefont=dict(color="#cccccc")),
+                    zmin=0, zmax=max(100, float(_heat_z.max())),
+                ))
+                fig_heat.update_layout(
+                    title="4-Year Failure Probability: BCR vs Dividend Rate",
+                    xaxis_title="Bitcoin Coverage Ratio",
+                    yaxis_title="Annual Dividend Rate",
+                    height=450, **PLOTLY_LAYOUT,
+                )
+                st.plotly_chart(fig_heat, use_container_width=True)
+
+                # ── What This Means ────────────────────────────────────
+                st.markdown(
+                    f"<div style='background:{PANEL};border-left:3px solid {BTC_ORANGE};"
+                    f"border-radius:4px;padding:14px;margin-top:12px;'>"
+                    f"<span style='color:{BTC_ORANGE};font-weight:700;font-size:0.95rem;'>"
+                    f"What This Means</span><br><br>"
+                    f"<span style='color:{TEXT};font-size:0.82rem;'>"
+                    f"With a <b>${bcr_nav/1e9:.1f}B</b> BTC treasury, <b>{bcr_ratio:.0f}x</b> BCR, "
+                    f"and <b>{bcr_div_rate*100:.0f}%</b> dividend rate:</span>"
+                    f"<ul style='color:{TEXT};font-size:0.82rem;margin:8px 0;padding-left:20px;'>"
+                    f"<li>PPE issuance: <b>${_bcr_ppe_notional:,.0f}</b> notional, "
+                    f"paying <b>${_bcr_annual_dividend:,.0f}/yr</b> in dividends</li>"
+                    f"<li><b>{fail_pct:.1f}%</b> of {n_sims_bcr:,} simulated 4-year paths result in "
+                    f"{'BCR falling below 1' if bcr_fail_mode == 'BCR < 1' else 'NAV falling below PPE notional'}</li>"
+                    f"<li>Median terminal BCR: <b>{np.median(terminal_bcr):.1f}x</b> | "
+                    f"5th percentile: <b>{np.percentile(terminal_bcr, 5):.1f}x</b></li>"
+                    f"<li>At constant BTC price, the treasury has <b>{runway_months} months</b> of runway "
+                    f"before BTC holdings are fully depleted by dividend payments</li>"
+                    f"</ul>"
+                    f"<span style='color:{TEXT_DIM};font-size:0.78rem;font-style:italic;'>"
+                    f"Solvency analysis uses RBB price paths (walk-forward score 0.8109). "
+                    f"Cash flows are deterministic given price — no additional randomness."
+                    f"</span></div>",
+                    unsafe_allow_html=True,
+                )
+
+            else:
+                st.warning("RBB paths not available. Re-run simulation.")
+
+        elif not st.session_state.get("prod_all"):
+            st.info("Click **Run All 3 Models** to generate forward projections and BCR stress test.")
 
     except Exception as e:
         st.error(f"Could not load production simulation dependencies: {e}")
