@@ -593,6 +593,7 @@
         .stat-value.blue { color: var(--accent-blue); }
 
         .stat-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+        .stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 
         /* ── Toggle buttons ── */
         .toggle-row { display: flex; gap: 8px; margin-bottom: 16px; }
@@ -868,7 +869,7 @@
             font-weight: 600;
         }
 
-        /* CSS Donut */
+        /* CSS Donut (legacy, kept for fallback) */
         .docs-donut-container {
             display: flex;
             align-items: center;
@@ -1098,6 +1099,48 @@
             line-height: 1.6;
         }
 
+        /* ── Doc Stats Row (for crash cards) ── */
+        .doc-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .doc-stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ── Hero Stats Banner ── */
+        .doc-hero-banner { text-align: center; padding: 50px 20px; margin-bottom: 60px; }
+        .hero-number { font-size: 4.5rem; font-weight: 700; color: var(--accent-orange); font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 40px rgba(247,147,26,0.3); }
+        .hero-subtitle { font-size: 1.2rem; color: var(--text-secondary); margin-top: 8px; }
+        .hero-detail { font-size: 0.85rem; color: var(--text-muted); margin-top: 12px; font-family: 'JetBrains Mono', monospace; }
+        .hero-stats-row { display: flex; justify-content: center; gap: 30px; margin-top: 30px; flex-wrap: wrap; }
+        .hero-stat { background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 30px; text-align: center; }
+        .hero-stat-value { font-size: 2rem; font-weight: 700; color: var(--accent-orange); font-family: 'JetBrains Mono', monospace; }
+        .hero-stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* ── Leaderboard ── */
+        .leaderboard { display: flex; flex-direction: column; gap: 16px; }
+        .lb-card { display: flex; gap: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; align-items: flex-start; }
+        .lb-rank { font-size: 2rem; font-weight: 700; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; min-width: 40px; }
+        .lb-body { flex: 1; }
+        .lb-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+        .lb-name { font-size: 1.1rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .lb-score { font-size: 1.8rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .lb-desc { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; }
+
+        /* ── SVG Donut ── */
+        .donut-segment { cursor: pointer; transition: all 0.3s ease; transform-origin: 100px 100px; }
+        .donut-segment:hover, .donut-segment.active { filter: drop-shadow(0 0 12px currentColor); stroke-width: 34; }
+        .donut-segment.dimmed { opacity: 0.3; }
+
+        /* ── Category Descriptions (donut right side) ── */
+        .cat-desc { transition: all 0.3s ease; padding: 12px; border-radius: 8px; cursor: pointer; }
+        .cat-desc.highlighted { background: rgba(255,255,255,0.03); }
+        .cat-desc.dimmed { opacity: 0.4; }
+
         /* ── Footer ── */
         .footer {
             text-align: center; padding: 30px;
@@ -1114,6 +1157,8 @@
         @media (max-width: 600px) {
             .stats-grid { grid-template-columns: 1fr; }
             h1 { font-size: 1.8rem; }
+            .hero-number { font-size: 2.5rem; }
+            .hero-stats-row { flex-direction: column; align-items: center; }
         }
     </style>
 </head>
@@ -1440,6 +1485,19 @@
         <div id="tab-docs" class="tab-content" style="display: none;">
             <div class="docs-container">
 
+                <!-- ═══ Hero Stats Banner ═══ -->
+                <div class="doc-hero-banner">
+                    <div class="hero-number" id="doc-hero-paths">630,000</div>
+                    <div class="hero-subtitle">simulated price paths, each scored against reality</div>
+                    <div class="hero-detail">126 independent out-of-sample windows x 5,000 paths per window x 4 horizons x 3 models</div>
+                    <div class="hero-stats-row">
+                        <div class="hero-stat"><div class="hero-stat-value">126</div><div class="hero-stat-label">out-of-sample windows</div></div>
+                        <div class="hero-stat"><div class="hero-stat-value" id="doc-training-days">4,209</div><div class="hero-stat-label">days of BTC history</div></div>
+                        <div class="hero-stat"><div class="hero-stat-value">9</div><div class="hero-stat-label">scoring dimensions</div></div>
+                        <div class="hero-stat"><div class="hero-stat-value">0</div><div class="hero-stat-label">lookahead bias</div></div>
+                    </div>
+                </div>
+
                 <!-- ═══ Section 1: Single Window Walk-Through ═══ -->
                 <div class="docs-section">
                     <div class="docs-section-title">How We Validated: A Single Window Walk-Through</div>
@@ -1451,9 +1509,7 @@
 
                     <div class="docs-two-col">
                         <div>
-                            <div class="docs-placeholder" style="height: 300px;">
-                                Fan Chart Placeholder
-                            </div>
+                            <div id="doc-walkthrough-fan" style="height:350px; border-radius:12px; overflow:hidden; background: var(--bg-tertiary); border: 1px solid var(--border-color);"></div>
                             <div class="docs-placeholder-caption">5,000 simulated paths vs what actually happened</div>
                         </div>
                         <div>
@@ -1541,43 +1597,40 @@
                     </div>
                 </div>
 
-                <!-- ═══ Section 3: From 126 Scores to One Final Number ═══ -->
+                <!-- ═══ Section 3: From 126 Scores to One Final Number (SVG Donut) ═══ -->
                 <div class="docs-section">
                     <div class="docs-section-title">From 126 Scores to One Final Number</div>
 
                     <div class="docs-two-col">
                         <div class="docs-donut-container">
-                            <div class="docs-donut" style="background: conic-gradient(
-                                #f7931a 0deg 126deg,
-                                #ff4757 126deg 216deg,
-                                #eab308 216deg 270deg,
-                                #a855f7 270deg 306deg,
-                                #4a9eff 306deg 360deg
-                            );">
-                                <div class="docs-donut-center">
-                                    <div class="docs-donut-center-label">Composite</div>
-                                    <div class="docs-donut-center-value">9 Metrics</div>
-                                </div>
-                            </div>
+                            <svg viewBox="0 0 200 200" width="250" height="250" id="donut-svg">
+                                <circle class="donut-segment" data-cat="path-dynamics" cx="100" cy="100" r="70" fill="none" stroke="#f7931a" stroke-width="30" stroke-dasharray="153.94 285.88" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+                                <circle class="donut-segment" data-cat="tail-risk" cx="100" cy="100" r="70" fill="none" stroke="#ff4757" stroke-width="30" stroke-dasharray="109.96 329.87" stroke-dashoffset="-153.94" transform="rotate(-90 100 100)"/>
+                                <circle class="donut-segment" data-cat="distributional" cx="100" cy="100" r="70" fill="none" stroke="#ffd700" stroke-width="30" stroke-dasharray="65.97 373.85" stroke-dashoffset="-263.89" transform="rotate(-90 100 100)"/>
+                                <circle class="donut-segment" data-cat="vol-clustering" cx="100" cy="100" r="70" fill="none" stroke="#a855f7" stroke-width="30" stroke-dasharray="43.98 395.84" stroke-dashoffset="-329.87" transform="rotate(-90 100 100)"/>
+                                <circle class="donut-segment" data-cat="forecast" cx="100" cy="100" r="70" fill="none" stroke="#4a9eff" stroke-width="30" stroke-dasharray="65.97 373.85" stroke-dashoffset="-373.85" transform="rotate(-90 100 100)"/>
+                                <text x="100" y="95" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="600" font-family="JetBrains Mono" id="donut-center-top">Composite</text>
+                                <text x="100" y="115" text-anchor="middle" fill="#a0a0b0" font-size="11" font-family="JetBrains Mono" id="donut-center-bottom">9 Metrics</text>
+                            </svg>
                         </div>
                         <div>
-                            <div class="docs-weight-category">
+                            <div class="docs-weight-category cat-desc" data-cat="path-dynamics">
                                 <div class="docs-weight-category-title" style="color: #f7931a;">Path Dynamics 35%</div>
                                 <div class="docs-weight-metric">DD Duration (13%) &middot; Recovery Time (12%) &middot; Time-in-DD (10%)</div>
                             </div>
-                            <div class="docs-weight-category">
+                            <div class="docs-weight-category cat-desc" data-cat="tail-risk">
                                 <div class="docs-weight-category-title" style="color: #ff4757;">Tail Risk 25%</div>
                                 <div class="docs-weight-metric">Tail Index (13%) &middot; Band Coverage (12%)</div>
                             </div>
-                            <div class="docs-weight-category">
-                                <div class="docs-weight-category-title" style="color: #eab308;">Distributional 15%</div>
+                            <div class="docs-weight-category cat-desc" data-cat="distributional">
+                                <div class="docs-weight-category-title" style="color: #ffd700;">Distributional 15%</div>
                                 <div class="docs-weight-metric">KS Stat (7%) &middot; QQ Divergence (8%)</div>
                             </div>
-                            <div class="docs-weight-category">
+                            <div class="docs-weight-category cat-desc" data-cat="vol-clustering">
                                 <div class="docs-weight-category-title" style="color: #a855f7;">Vol Clustering 10%</div>
                                 <div class="docs-weight-metric">ACF of r&sup2; (10%)</div>
                             </div>
-                            <div class="docs-weight-category">
+                            <div class="docs-weight-category cat-desc" data-cat="forecast">
                                 <div class="docs-weight-category-title" style="color: #4a9eff;">Forecast 15%</div>
                                 <div class="docs-weight-metric">MAPE (15%)</div>
                             </div>
@@ -1591,11 +1644,49 @@
                     </div>
                 </div>
 
-                <!-- ═══ Section 4: Tail Event Reproduction ═══ -->
+                <!-- ═══ Section 4: Model Leaderboard ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">Model Leaderboard</div>
+                    <div class="leaderboard">
+                        <div class="lb-card" style="border-left: 4px solid #f7931a;">
+                            <div class="lb-rank">1</div>
+                            <div class="lb-body">
+                                <div class="lb-header"><span class="lb-name" style="color:#f7931a;">RBB (Block Bootstrap)</span><span class="lb-score" style="color:#f7931a;" id="lb-score-rbb">0.8109</span></div>
+                                <div class="lb-desc">Production model. Resamples actual historical BTC return sequences as contiguous blocks. Nonparametric -- no assumptions about return distribution. Preserves fat tails, volatility clustering, and multi-day drawdown patterns by construction.</div>
+                            </div>
+                        </div>
+                        <div class="lb-card" style="border-left: 4px solid #4a9eff;">
+                            <div class="lb-rank">2</div>
+                            <div class="lb-body">
+                                <div class="lb-header"><span class="lb-name" style="color:#4a9eff;">GARCH(1,1) t-dist</span><span class="lb-score" style="color:#4a9eff;" id="lb-score-garch">0.7800</span></div>
+                                <div class="lb-desc">Volatility clustering benchmark. Models conditional variance with Student's t innovations. Captures 'big moves follow big moves' but falls short on tail risk (-0.12 on tail index). Loses to GBM at 1460d due to IGARCH variance drift.</div>
+                            </div>
+                        </div>
+                        <div class="lb-card" style="border-left: 4px solid #a0a0b0;">
+                            <div class="lb-rank">3</div>
+                            <div class="lb-body">
+                                <div class="lb-header"><span class="lb-name" style="color:#a0a0b0;">GBM (Log-Normal)</span><span class="lb-score" style="color:#a0a0b0;" id="lb-score-gbm">0.7630</span></div>
+                                <div class="lb-desc">Baseline control. Constant drift, constant volatility, normal innovations. The simplest possible price model. Exists to answer: 'Is your model adding value over a random walk?'</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Section 5: Walk-Forward Composite by Horizon ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">Walk-Forward Composite by Horizon</div>
+                    <div class="docs-section-subtitle">Per-horizon performance across all walk-forward windows.</div>
+                    <div id="doc-horizon-chart" style="height:400px; border-radius:12px; overflow:hidden;"></div>
+                    <div class="docs-callout" style="margin-top:20px;">
+                        <strong>Horizon weights:</strong> 180d=10%, 365d=20%, 730d=35%, 1460d=35%. RBB's advantage widens at longer horizons where multi-day path structure matters most. GARCH loses to GBM at 1460d due to IGARCH variance drift.
+                    </div>
+                </div>
+
+                <!-- ═══ Section 6: Tail Event Reproduction ═══ -->
                 <div class="docs-section">
                     <div class="docs-section-title">Tail Event Reproduction @ 1460d</div>
 
-                    <table class="docs-table">
+                    <table class="docs-table" id="doc-tail-table">
                         <thead>
                             <tr>
                                 <th style="color: var(--text-secondary);">Event</th>
@@ -1604,7 +1695,7 @@
                                 <th style="color: #a0a0b0;">GBM</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="doc-tail-tbody">
                             <tr><td>DD >= 50%</td><td>92.3%</td><td>59.2%</td><td>96.1%</td></tr>
                             <tr><td>DD >= 75%</td><td>28.9%</td><td>17.8%</td><td>44.5%</td></tr>
                             <tr><td>Duration >= 180d</td><td>95.4%</td><td>86.1%</td><td>98.4%</td></tr>
@@ -1621,7 +1712,7 @@
                     </div>
                 </div>
 
-                <!-- ═══ Section 5: Production Config ═══ -->
+                <!-- ═══ Section 7: Production Config — Forward Projection ═══ -->
                 <div class="docs-section">
                     <div class="docs-section-title">Production Config &mdash; Forward Projection</div>
 
@@ -1630,54 +1721,60 @@
                         Geometric bl=30 &middot; regime OFF &middot; full historical pool &middot; 4,947 training days &middot; starting price $66,885
                     </div>
 
-                    <div class="docs-stat-cards">
+                    <div class="docs-stat-cards" id="doc-forward-stats">
                         <div class="docs-stat-card">
                             <div class="docs-stat-card-label">Median</div>
-                            <div class="docs-stat-card-value">$407,907</div>
+                            <div class="docs-stat-card-value" id="doc-fwd-median">$407,907</div>
                         </div>
                         <div class="docs-stat-card">
                             <div class="docs-stat-card-label">Mean</div>
-                            <div class="docs-stat-card-value">$1,104,167</div>
+                            <div class="docs-stat-card-value" id="doc-fwd-mean">$1,104,167</div>
                         </div>
                         <div class="docs-stat-card">
                             <div class="docs-stat-card-label">P5</div>
-                            <div class="docs-stat-card-value">$41,973</div>
+                            <div class="docs-stat-card-value" id="doc-fwd-p5">$41,973</div>
                         </div>
                         <div class="docs-stat-card">
                             <div class="docs-stat-card-label">P95</div>
-                            <div class="docs-stat-card-value">$3,934,186</div>
+                            <div class="docs-stat-card-value" id="doc-fwd-p95">$3,934,186</div>
                         </div>
                         <div class="docs-stat-card">
                             <div class="docs-stat-card-label">Below Start</div>
-                            <div class="docs-stat-card-value">10.6%</div>
+                            <div class="docs-stat-card-value" id="doc-fwd-below">10.6%</div>
                         </div>
                     </div>
 
-                    <div class="docs-placeholder" style="height: 300px; margin-bottom: 16px;">
-                        Production Fan Chart Placeholder
-                    </div>
+                    <div id="doc-forward-fan" style="height:350px; border-radius:12px; overflow:hidden; background: var(--bg-tertiary); border: 1px solid var(--border-color); margin-bottom: 16px;"></div>
 
-                    <div class="docs-dd-cards">
-                        <div class="docs-dd-card">
-                            <div class="docs-dd-card-label">DD >= 50%</div>
-                            <div class="docs-dd-card-value">89.2%</div>
+                    <div class="doc-stats-row">
+                        <div class="stat-card" style="border-left: 4px solid var(--accent-orange);">
+                            <div class="stat-label" style="font-weight:700;">2014 Mt. Gox</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">DD >= 85%, duration >= 13mo</div>
+                            <div class="stat-value" style="color:var(--accent-orange); font-size:1.6rem;" id="doc-crash-mtgox">341 / 5,000</div>
+                            <div style="color:var(--accent-orange); font-size:0.9rem;" id="doc-crash-mtgox-pct">(6.82%)</div>
                         </div>
-                        <div class="docs-dd-card">
-                            <div class="docs-dd-card-label">DD >= 75%</div>
-                            <div class="docs-dd-card-value">23.5%</div>
+                        <div class="stat-card" style="border-left: 4px solid var(--accent-orange);">
+                            <div class="stat-label" style="font-weight:700;">2018 Crash</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">DD >= 84%, duration >= 12mo</div>
+                            <div class="stat-value" style="color:var(--accent-orange); font-size:1.6rem;" id="doc-crash-2018">411 / 5,000</div>
+                            <div style="color:var(--accent-orange); font-size:0.9rem;" id="doc-crash-2018-pct">(8.22%)</div>
                         </div>
-                        <div class="docs-dd-card">
-                            <div class="docs-dd-card-label">Dur >= 180d</div>
-                            <div class="docs-dd-card-value">97.1%</div>
+                        <div class="stat-card" style="border-left: 4px solid var(--accent-orange);">
+                            <div class="stat-label" style="font-weight:700;">2022 Crash</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">DD >= 77%, duration >= 13mo</div>
+                            <div class="stat-value" style="color:var(--accent-orange); font-size:1.6rem;" id="doc-crash-2022">949 / 5,000</div>
+                            <div style="color:var(--accent-orange); font-size:0.9rem;" id="doc-crash-2022-pct">(18.98%)</div>
                         </div>
-                        <div class="docs-dd-card">
-                            <div class="docs-dd-card-label">Dur >= 365d</div>
-                            <div class="docs-dd-card-value">70.9%</div>
+                        <div class="stat-card" style="border-left: 4px solid var(--accent-orange);">
+                            <div class="stat-label" style="font-weight:700;">2020 Flash Crash</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">DD >= 50% within 30d</div>
+                            <div class="stat-value" style="color:var(--accent-orange); font-size:1.6rem;" id="doc-crash-2020">15 / 5,000</div>
+                            <div style="color:var(--accent-orange); font-size:0.9rem;" id="doc-crash-2020-pct">(0.30%)</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ═══ Section 6: What This Means ═══ -->
+                <!-- ═══ Section 8: What This Means ═══ -->
                 <div class="docs-section">
                     <div class="docs-section-title">What This Means</div>
 
@@ -1724,7 +1821,307 @@
         const LOG_TICKVALS = [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100, 500, 1000, 5000, 10000, 50000, 100000];
         const LOG_TICKTEXT = ['0.1','0.5','1','2','5','10','20','50','100','500','1K','5K','10K','50K','100K'];
 
+        // ════════════════════════════════════════════
+        // ENGINE_RESULTS — Shared data for Documentation tab
+        // ════════════════════════════════════════════
+        window.ENGINE_RESULTS = {
+            totalWindows: 126,
+            trainingDays: D.metadata.n_training_days || 4209,
+            dataThrough: D.metadata.data_end_date || '2026-03-28',
+            startPrice: D.metadata.initial_price || 66885,
+            nSims: D.metadata.n_sims || 5000,
+            totalPaths: 126 * (D.metadata.n_sims || 5000),
+
+            compositeScores: D.metadata.walk_forward_scores || { rbb: 0.8109, garch: 0.7800, gbm: 0.7630 },
+
+            horizonScores: {
+                '180d': { rbb: 0.810, garch: 0.797, gbm: 0.759 },
+                '365d': { rbb: 0.822, garch: 0.802, gbm: 0.771 },
+                '730d': { rbb: 0.827, garch: 0.798, gbm: 0.762 },
+                '1460d': { rbb: 0.793, garch: 0.751, gbm: 0.762 }
+            },
+
+            exampleWindow: {
+                id: 25, horizon: '730d', composite: 0.8509,
+                trainEnd: '2022-11-15', testEnd: '2024-11-14',
+                metrics: {
+                    ddDuration: 0.883, recovery: 0.905, timeInDD: 0.873,
+                    tailIndex: 0.849, bandCov: 1.000, ksStat: 0.943,
+                    qqDiv: 0.785, volCluster: 0.816, mape: 0.663
+                }
+            },
+
+            tailEvents: {
+                dd50: { rbb: 92.3, garch: 59.2, gbm: 96.1 },
+                dd75: { rbb: 28.9, garch: 17.8, gbm: 44.5 },
+                dur180: { rbb: 95.4, garch: 86.1, gbm: 98.4 },
+                dur365: { rbb: 64.4, garch: 44.7, gbm: 80.2 },
+                mtGox: { rbb: '450/5,000 (9.0%)', garch: '335/5,000 (6.7%)', gbm: '958/5,000 (19.16%)' },
+                crash2018: { rbb: '514/5,000 (10.28%)', garch: '382/5,000 (7.64%)', gbm: '1,072/5,000 (21.44%)' },
+                crash2022: { rbb: '1,167/5,000 (23.34%)', garch: '593/5,000 (11.86%)', gbm: '1,911/5,000 (38.22%)' },
+                flash2020: { rbb: '19/5,000 (0.38%)', garch: '15/5,000 (0.3%)', gbm: '4/5,000 (0.08%)' }
+            },
+
+            forwardProjection: {
+                medianTerminal: Math.round(D.terminal_price_stats && D.terminal_price_stats.rbb ? D.terminal_price_stats.rbb.median : 407907),
+                meanTerminal: Math.round(D.terminal_price_stats && D.terminal_price_stats.rbb ? D.terminal_price_stats.rbb.mean : 1104167),
+                p5: Math.round(D.terminal_price_stats && D.terminal_price_stats.rbb ? D.terminal_price_stats.rbb.p5 : 41973),
+                p95: Math.round(D.terminal_price_stats && D.terminal_price_stats.rbb ? D.terminal_price_stats.rbb.p95 : 3934186),
+                belowStart: (D.terminal_price_stats && D.terminal_price_stats.rbb ? D.terminal_price_stats.rbb.pct_below_start : 10.6),
+                crashes: {
+                    mtGox: { count: 341, total: 5000, pct: 6.82, criteria: 'DD >= 85%, duration >= 13mo' },
+                    crash2018: { count: 411, total: 5000, pct: 8.22, criteria: 'DD >= 84%, duration >= 12mo' },
+                    crash2022: { count: 949, total: 5000, pct: 18.98, criteria: 'DD >= 77%, duration >= 13mo' },
+                    flash2020: { count: 15, total: 5000, pct: 0.30, criteria: 'DD >= 50% within 30d' }
+                }
+            },
+
+            pricePercentiles: D.price_percentiles || null,
+            bcrOverTime: D.bcr_over_time || null,
+        };
+        const ER = window.ENGINE_RESULTS;
+
         let dataLoaded = false;
+
+        // ════════════════════════════════════════════
+        // POPULATE DOC TAB FROM ENGINE_RESULTS
+        // ════════════════════════════════════════════
+        function populateDocFromER() {
+            // Hero banner
+            var totalPaths = ER.totalPaths;
+            var heroEl = document.getElementById('doc-hero-paths');
+            if (heroEl) heroEl.textContent = totalPaths.toLocaleString();
+
+            var trainingEl = document.getElementById('doc-training-days');
+            if (trainingEl) trainingEl.textContent = ER.trainingDays.toLocaleString();
+
+            // Leaderboard scores
+            var cs = ER.compositeScores;
+            var lbRbb = document.getElementById('lb-score-rbb');
+            if (lbRbb) lbRbb.textContent = cs.rbb.toFixed(4);
+            var lbGarch = document.getElementById('lb-score-garch');
+            if (lbGarch) lbGarch.textContent = cs.garch.toFixed(4);
+            var lbGbm = document.getElementById('lb-score-gbm');
+            if (lbGbm) lbGbm.textContent = cs.gbm.toFixed(4);
+
+            // Forward projection stats
+            var fp = ER.forwardProjection;
+            var fwdMedian = document.getElementById('doc-fwd-median');
+            if (fwdMedian) fwdMedian.textContent = '$' + fp.medianTerminal.toLocaleString();
+            var fwdMean = document.getElementById('doc-fwd-mean');
+            if (fwdMean) fwdMean.textContent = '$' + fp.meanTerminal.toLocaleString();
+            var fwdP5 = document.getElementById('doc-fwd-p5');
+            if (fwdP5) fwdP5.textContent = '$' + fp.p5.toLocaleString();
+            var fwdP95 = document.getElementById('doc-fwd-p95');
+            if (fwdP95) fwdP95.textContent = '$' + fp.p95.toLocaleString();
+            var fwdBelow = document.getElementById('doc-fwd-below');
+            if (fwdBelow) fwdBelow.textContent = fp.belowStart + '%';
+
+            // Crash cards
+            var crashes = fp.crashes;
+            var mtgoxEl = document.getElementById('doc-crash-mtgox');
+            if (mtgoxEl) mtgoxEl.textContent = crashes.mtGox.count.toLocaleString() + ' / ' + crashes.mtGox.total.toLocaleString();
+            var mtgoxPct = document.getElementById('doc-crash-mtgox-pct');
+            if (mtgoxPct) mtgoxPct.textContent = '(' + crashes.mtGox.pct.toFixed(2) + '%)';
+
+            var c2018El = document.getElementById('doc-crash-2018');
+            if (c2018El) c2018El.textContent = crashes.crash2018.count.toLocaleString() + ' / ' + crashes.crash2018.total.toLocaleString();
+            var c2018Pct = document.getElementById('doc-crash-2018-pct');
+            if (c2018Pct) c2018Pct.textContent = '(' + crashes.crash2018.pct.toFixed(2) + '%)';
+
+            var c2022El = document.getElementById('doc-crash-2022');
+            if (c2022El) c2022El.textContent = crashes.crash2022.count.toLocaleString() + ' / ' + crashes.crash2022.total.toLocaleString();
+            var c2022Pct = document.getElementById('doc-crash-2022-pct');
+            if (c2022Pct) c2022Pct.textContent = '(' + crashes.crash2022.pct.toFixed(2) + '%)';
+
+            var c2020El = document.getElementById('doc-crash-2020');
+            if (c2020El) c2020El.textContent = crashes.flash2020.count.toLocaleString() + ' / ' + crashes.flash2020.total.toLocaleString();
+            var c2020Pct = document.getElementById('doc-crash-2020-pct');
+            if (c2020Pct) c2020Pct.textContent = '(' + crashes.flash2020.pct.toFixed(2) + '%)';
+        }
+
+        // ════════════════════════════════════════════
+        // DOCUMENTATION TAB CHARTS
+        // ════════════════════════════════════════════
+
+        function renderWalkthroughFan() {
+            var pp = ER.pricePercentiles;
+            if (!pp || !pp.rbb) return;
+            // The price percentiles are sampled every 30 days for the full 1460d horizon
+            // For window 25 (730d), we need the first 730/30 ~ 24 data points
+            var nPoints = Math.min(25, pp.rbb.p50.length); // 730 days / 30 = ~24, +1 for start
+            var rbb = pp.rbb;
+            var x = Array.from({length: nPoints}, function(_, i) { return i * 30; });
+
+            var p5Slice = rbb.p5.slice(0, nPoints);
+            var p95Slice = rbb.p95.slice(0, nPoints);
+            var p25Slice = rbb.p25.slice(0, nPoints);
+            var p75Slice = rbb.p75.slice(0, nPoints);
+            var p50Slice = rbb.p50.slice(0, nPoints);
+
+            var traces = [
+                {
+                    x: x.concat([].concat(x).reverse()),
+                    y: p5Slice.concat([].concat(p95Slice).reverse()),
+                    fill: 'toself', fillcolor: 'rgba(247,147,26,0.08)',
+                    line: {color: 'transparent'}, name: '90% CI', showlegend: true, hoverinfo: 'skip'
+                },
+                {
+                    x: x.concat([].concat(x).reverse()),
+                    y: p25Slice.concat([].concat(p75Slice).reverse()),
+                    fill: 'toself', fillcolor: 'rgba(247,147,26,0.18)',
+                    line: {color: 'transparent'}, name: '50% CI', showlegend: true, hoverinfo: 'skip'
+                },
+                {
+                    x: x, y: p50Slice, mode: 'lines',
+                    line: {color: '#f7931a', width: 2.5}, name: 'Median Sim'
+                },
+            ];
+
+            Plotly.newPlot('doc-walkthrough-fan', traces, {
+                paper_bgcolor: 'transparent', plot_bgcolor: '#16161f',
+                font: { family: 'Space Grotesk, sans-serif', color: '#a0a0b0', size: 11 },
+                xaxis: { title: 'Days', gridcolor: '#2a2a3a', tickfont: {color: '#a0a0b0'} },
+                yaxis: { title: 'Price (USD)', type: 'log', gridcolor: '#2a2a3a', tickfont: {color: '#a0a0b0'} },
+                margin: { t: 20, r: 30, b: 50, l: 70 },
+                legend: { font: {color: '#a0a0b0'} },
+                showlegend: true,
+            }, {responsive: true});
+        }
+
+        function renderForwardFan() {
+            var pp = ER.pricePercentiles;
+            if (!pp || !pp.rbb) return;
+            var rbb = pp.rbb;
+            var n = rbb.p50.length;
+            var x = Array.from({length: n}, function(_, i) { return i * 30; });
+
+            var traces = [
+                {
+                    x: x.concat([].concat(x).reverse()),
+                    y: rbb.p5.concat([].concat(rbb.p95).reverse()),
+                    fill: 'toself', fillcolor: 'rgba(247,147,26,0.08)',
+                    line: {color: 'transparent'}, name: '90% CI', showlegend: true, hoverinfo: 'skip'
+                },
+                {
+                    x: x.concat([].concat(x).reverse()),
+                    y: rbb.p25.concat([].concat(rbb.p75).reverse()),
+                    fill: 'toself', fillcolor: 'rgba(247,147,26,0.18)',
+                    line: {color: 'transparent'}, name: '50% CI', showlegend: true, hoverinfo: 'skip'
+                },
+                {
+                    x: x, y: rbb.p50, mode: 'lines',
+                    line: {color: '#f7931a', width: 2.5}, name: 'Median'
+                },
+            ];
+            // Add median lines for GARCH and GBM
+            if (pp.garch) {
+                traces.push({
+                    x: x, y: pp.garch.p50, mode: 'lines',
+                    line: {color: '#4a9eff', width: 2, dash: 'dash'}, name: 'GARCH Median'
+                });
+            }
+            if (pp.gbm) {
+                traces.push({
+                    x: x, y: pp.gbm.p50, mode: 'lines',
+                    line: {color: '#a0a0b0', width: 2, dash: 'dash'}, name: 'GBM Median'
+                });
+            }
+
+            Plotly.newPlot('doc-forward-fan', traces, {
+                paper_bgcolor: 'transparent', plot_bgcolor: '#16161f',
+                font: {family: 'Space Grotesk, sans-serif', color: '#a0a0b0', size: 11},
+                xaxis: {title: 'Days', gridcolor: '#2a2a3a', tickfont: {color: '#a0a0b0'}},
+                yaxis: {title: 'Price (USD)', type: 'log', gridcolor: '#2a2a3a', tickfont: {color: '#a0a0b0'}},
+                margin: {t: 20, r: 30, b: 50, l: 70},
+                showlegend: true, legend: {font: {color: '#a0a0b0'}},
+            }, {responsive: true});
+        }
+
+        function renderHorizonChart() {
+            var hs = ER.horizonScores;
+            var horizons = ['180d', '365d', '730d', '1460d'];
+
+            var traces = [
+                {
+                    name: 'RBB', x: horizons,
+                    y: horizons.map(function(h) { return hs[h].rbb; }),
+                    type: 'bar', marker: {color: '#f7931a'},
+                    text: horizons.map(function(h) { return hs[h].rbb.toFixed(3); }),
+                    textposition: 'outside', textfont: {color: '#f7931a', size: 11}
+                },
+                {
+                    name: 'GARCH', x: horizons,
+                    y: horizons.map(function(h) { return hs[h].garch; }),
+                    type: 'bar', marker: {color: '#4a9eff'},
+                    text: horizons.map(function(h) { return hs[h].garch.toFixed(3); }),
+                    textposition: 'outside', textfont: {color: '#4a9eff', size: 11}
+                },
+                {
+                    name: 'GBM', x: horizons,
+                    y: horizons.map(function(h) { return hs[h].gbm; }),
+                    type: 'bar', marker: {color: '#606070'},
+                    text: horizons.map(function(h) { return hs[h].gbm.toFixed(3); }),
+                    textposition: 'outside', textfont: {color: '#a0a0b0', size: 11}
+                },
+            ];
+
+            Plotly.newPlot('doc-horizon-chart', traces, {
+                paper_bgcolor: 'transparent', plot_bgcolor: '#16161f',
+                font: { family: 'Space Grotesk, sans-serif', color: '#a0a0b0', size: 12 },
+                barmode: 'group',
+                xaxis: { gridcolor: '#2a2a3a', tickfont: {color: '#a0a0b0', size: 13} },
+                yaxis: { gridcolor: '#2a2a3a', tickfont: {color: '#a0a0b0'}, range: [0.70, 0.86], title: 'Walk-Forward Composite' },
+                margin: { t: 20, r: 30, b: 50, l: 70 },
+                legend: { font: {color: '#a0a0b0'}, orientation: 'h', y: -0.15 },
+            }, {responsive: true});
+        }
+
+        function initDonutHover() {
+            var segments = document.querySelectorAll('.donut-segment');
+            var catDescs = document.querySelectorAll('.cat-desc');
+            var centerTop = document.getElementById('donut-center-top');
+            var centerBottom = document.getElementById('donut-center-bottom');
+
+            var catNames = {
+                'path-dynamics': ['Path Dynamics', '35%'],
+                'tail-risk': ['Tail Risk', '25%'],
+                'distributional': ['Distributional', '15%'],
+                'vol-clustering': ['Vol Clustering', '10%'],
+                'forecast': ['Forecast', '15%']
+            };
+
+            function highlight(cat) {
+                segments.forEach(function(s) {
+                    if (s.dataset.cat === cat) { s.classList.add('active'); s.classList.remove('dimmed'); }
+                    else { s.classList.remove('active'); s.classList.add('dimmed'); }
+                });
+                catDescs.forEach(function(d) {
+                    if (d.dataset.cat === cat) { d.classList.add('highlighted'); d.classList.remove('dimmed'); }
+                    else { d.classList.remove('highlighted'); d.classList.add('dimmed'); }
+                });
+                if (catNames[cat]) {
+                    centerTop.textContent = catNames[cat][0];
+                    centerBottom.textContent = catNames[cat][1];
+                }
+            }
+
+            function resetAll() {
+                segments.forEach(function(s) { s.classList.remove('active', 'dimmed'); });
+                catDescs.forEach(function(d) { d.classList.remove('highlighted', 'dimmed'); });
+                centerTop.textContent = 'Composite';
+                centerBottom.textContent = '9 Metrics';
+            }
+
+            segments.forEach(function(s) {
+                s.addEventListener('mouseenter', function() { highlight(s.dataset.cat); });
+                s.addEventListener('mouseleave', resetAll);
+            });
+            catDescs.forEach(function(d) {
+                d.addEventListener('mouseenter', function() { highlight(d.dataset.cat); });
+                d.addEventListener('mouseleave', resetAll);
+            });
+        }
 
         // ════════════════════════════════════════════
         // BCR COMPUTATION
@@ -1831,9 +2228,6 @@
                 line: { color: 'transparent' },
                 showlegend: false, hoverinfo: 'skip',
             });
-
-            // BCR = 1 dashed line
-            // (added via shapes below)
 
             ['rbb', 'garch', 'gbm'].forEach(k => {
                 if (!curves[k]) return;
@@ -2018,6 +2412,15 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).style.display = 'block';
             document.querySelector('[data-tab="' + tabId + '"]').classList.add('active');
+
+            // Render doc charts when switching to docs tab (Plotly needs visible container)
+            if (tabId === 'docs') {
+                setTimeout(function() {
+                    renderWalkthroughFan();
+                    renderForwardFan();
+                    renderHorizonChart();
+                }, 50);
+            }
         }
 
         // ════════════════════════════════════════════
@@ -2032,6 +2435,13 @@
         // INITIAL STATE
         // ════════════════════════════════════════════
         updateSidebar();
+        populateDocFromER();
+        initDonutHover();
+
+        // Render doc charts on initial load (they may be hidden, so also re-render on tab switch)
+        renderWalkthroughFan();
+        renderForwardFan();
+        renderHorizonChart();
     </script>
 </body>
 </html>
