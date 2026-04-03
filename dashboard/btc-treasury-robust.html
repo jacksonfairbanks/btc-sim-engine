@@ -555,6 +555,10 @@
             position: relative;
         }
 
+        .stat-card.model-rbb { border-left: 4px solid #f7931a; }
+        .stat-card.model-garch { border-left: 4px solid #4a9eff; }
+        .stat-card.model-gbm { border-left: 4px solid #a0a0b0; }
+
         .pd-card-header {
             display: flex;
             align-items: center;
@@ -677,6 +681,423 @@
         }
         .input-row input:focus { border-color: var(--accent-orange); }
 
+        /* ── Tab Bar ── */
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #12121a;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            width: fit-content;
+        }
+
+        .tab-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-orange);
+            color: #000;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ── Documentation Tab ── */
+        .docs-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .docs-section {
+            margin-bottom: 60px;
+        }
+
+        .docs-section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .docs-section-subtitle {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .docs-callout {
+            border-left: 4px solid var(--accent-orange);
+            background: var(--bg-secondary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .docs-callout strong {
+            color: var(--accent-orange);
+        }
+
+        .docs-two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .docs-two-col { grid-template-columns: 1fr; }
+        }
+
+        .docs-placeholder {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .docs-placeholder-caption {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* CSS Bar Chart */
+        .css-bar-chart { display: flex; flex-direction: column; gap: 10px; }
+
+        .css-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .css-bar-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 100px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .css-bar-track {
+            flex: 1;
+            height: 22px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .css-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .css-bar-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            min-width: 45px;
+            flex-shrink: 0;
+        }
+
+        /* Horizon bars */
+        .horizon-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .horizon-bar-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            min-width: 60px;
+            flex-shrink: 0;
+        }
+
+        .horizon-bar-track {
+            flex: 1;
+            height: 28px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .horizon-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(0,0,0,0.7);
+            font-weight: 600;
+        }
+
+        /* CSS Donut */
+        .docs-donut-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .docs-donut {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .docs-donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .docs-donut-center-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .docs-donut-center-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Weight category */
+        .docs-weight-category {
+            margin-bottom: 20px;
+        }
+
+        .docs-weight-category-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .docs-weight-metric {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding-left: 12px;
+            line-height: 1.8;
+        }
+
+        /* Hero score card */
+        .docs-hero-score {
+            border: 2px solid var(--accent-orange);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(247,147,26,0.1) 0%, rgba(247,147,26,0.03) 100%);
+            box-shadow: 0 0 40px rgba(247,147,26,0.1);
+            margin-top: 30px;
+        }
+
+        .docs-hero-score-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .docs-hero-score-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+            text-shadow: 0 0 30px rgba(247,147,26,0.3);
+        }
+
+        .docs-hero-score-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Docs table */
+        .docs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .docs-table th, .docs-table td {
+            padding: 10px 14px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .docs-table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+        }
+
+        .docs-table th:first-child, .docs-table td:first-child {
+            text-align: left;
+        }
+
+        .docs-table tr:nth-child(odd) td { background: #12121a; }
+        .docs-table tr:nth-child(even) td { background: #16161f; }
+        .docs-table tr:hover td { background: var(--bg-tertiary); }
+
+        /* Docs stat cards grid */
+        .docs-stat-cards {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .docs-stat-cards { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .docs-stat-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .docs-stat-card-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .docs-stat-card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+        }
+
+        /* Drawdown cards */
+        .docs-dd-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .docs-dd-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .docs-dd-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-red);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .docs-dd-card-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .docs-dd-card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-red);
+        }
+
+        .docs-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .docs-bullet-list li {
+            padding: 8px 0;
+            padding-left: 16px;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .docs-bullet-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-orange);
+        }
+
+        .docs-italic-footer {
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 16px;
+            line-height: 1.6;
+        }
+
         /* ── Footer ── */
         .footer {
             text-align: center; padding: 30px;
@@ -709,6 +1130,12 @@
             <div class="tag">5,000 paths x 3 models x 9-metric scoring</div>
         </header>
 
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="risk" onclick="switchTab('risk')">Risk Model</button>
+            <button class="tab-btn" data-tab="docs" onclick="switchTab('docs')">Documentation</button>
+        </div>
+
+        <div id="tab-risk" class="tab-content active" style="display: block;">
         <div class="main-grid">
 
             <!-- ═══ SIDEBAR ═══ -->
@@ -874,9 +1301,9 @@
 
                 <!-- PD Stat Cards: 3 models -->
                 <div class="stats-grid" id="pd-cards-row">
-                    <div class="stat-card" style="border-color: rgba(247,147,26,0.3);">
+                    <div class="stat-card model-rbb">
                         <div class="pd-card-header">
-                            <span>RBB Failure Rate</span>
+                            <span style="color: #f7931a;">RBB Failure Rate</span>
                             <span class="stat-tooltip-wrapper" style="position:relative;">
                                 <span class="stat-info-icon">?</span>
                                 <div class="stat-tooltip" style="width:280px;">
@@ -886,12 +1313,12 @@
                                 </div>
                             </span>
                         </div>
-                        <div class="stat-value orange" id="pd-rbb">--</div>
-                        <div class="stat-sub">Production Model</div>
+                        <div class="stat-value" id="pd-rbb" style="color: #f7931a;">--</div>
+                        <div class="stat-sub" style="color: var(--text-muted);">Production Model</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card model-garch">
                         <div class="pd-card-header">
-                            <span>GARCH(1,1) Failure</span>
+                            <span style="color: #4a9eff;">GARCH(1,1) Failure</span>
                             <span class="stat-tooltip-wrapper" style="position:relative;">
                                 <span class="stat-info-icon">?</span>
                                 <div class="stat-tooltip" style="width:280px;">
@@ -901,12 +1328,12 @@
                                 </div>
                             </span>
                         </div>
-                        <div class="stat-value blue" id="pd-garch">--</div>
-                        <div class="stat-sub">Vol Clustering</div>
+                        <div class="stat-value" id="pd-garch" style="color: #4a9eff;">--</div>
+                        <div class="stat-sub" style="color: var(--text-muted);">Vol Clustering</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card model-gbm">
                         <div class="pd-card-header">
-                            <span>GBM Failure Rate</span>
+                            <span style="color: #a0a0b0;">GBM Failure Rate</span>
                             <span class="stat-tooltip-wrapper" style="position:relative;">
                                 <span class="stat-info-icon">?</span>
                                 <div class="stat-tooltip" style="width:280px;">
@@ -916,8 +1343,8 @@
                                 </div>
                             </span>
                         </div>
-                        <div class="stat-value" id="pd-gbm" style="color: var(--text-muted);">--</div>
-                        <div class="stat-sub">Baseline</div>
+                        <div class="stat-value" id="pd-gbm" style="color: #a0a0b0;">--</div>
+                        <div class="stat-sub" style="color: var(--text-muted);">Baseline</div>
                     </div>
                 </div>
 
@@ -1007,6 +1434,269 @@
 
             </div>
         </div>
+
+        </div><!-- /tab-risk -->
+
+        <div id="tab-docs" class="tab-content" style="display: none;">
+            <div class="docs-container">
+
+                <!-- ═══ Section 1: Single Window Walk-Through ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">How We Validated: A Single Window Walk-Through</div>
+                    <div class="docs-section-subtitle">Pick one window. Train the model on everything before it. Simulate 5,000 paths forward. Score against what actually happened.</div>
+
+                    <div class="docs-callout">
+                        <strong>Window 25</strong> &mdash; Train: start to 2022-11-15 &mdash; Test: 2022-11-15 to 2024-11-14 (730 days) &mdash; <strong>Composite: 0.8509</strong>
+                    </div>
+
+                    <div class="docs-two-col">
+                        <div>
+                            <div class="docs-placeholder" style="height: 300px;">
+                                Fan Chart Placeholder
+                            </div>
+                            <div class="docs-placeholder-caption">5,000 simulated paths vs what actually happened</div>
+                        </div>
+                        <div>
+                            <div class="css-bar-chart">
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">DD Duration</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 88.3%; background: #f7931a;"></div></div>
+                                    <div class="css-bar-value">0.883</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">Recovery</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 90.5%; background: #f7931a;"></div></div>
+                                    <div class="css-bar-value">0.905</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">Time in DD</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 87.3%; background: #f7931a;"></div></div>
+                                    <div class="css-bar-value">0.873</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">Tail Index</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 84.9%; background: #ff4757;"></div></div>
+                                    <div class="css-bar-value">0.849</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">Band Cov</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 100%; background: #ff4757;"></div></div>
+                                    <div class="css-bar-value">1.000</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">KS Stat</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 94.3%; background: #eab308;"></div></div>
+                                    <div class="css-bar-value">0.943</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">QQ Div</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 78.5%; background: #eab308;"></div></div>
+                                    <div class="css-bar-value">0.785</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">Vol Cluster</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 81.6%; background: #a855f7;"></div></div>
+                                    <div class="css-bar-value">0.816</div>
+                                </div>
+                                <div class="css-bar-row">
+                                    <div class="css-bar-label">MAPE</div>
+                                    <div class="css-bar-track"><div class="css-bar-fill" style="width: 66.3%; background: #4a9eff;"></div></div>
+                                    <div class="css-bar-value">0.663</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Section 2: Repeated 126 Times ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">This Process Repeated 126 Times</div>
+                    <div class="docs-section-subtitle">Every 90 days, the training window expands and a new out-of-sample test runs. No window ever sees data from its own test period.</div>
+
+                    <div style="max-width: 700px;">
+                        <div class="horizon-bar-row">
+                            <div class="horizon-bar-label" style="color: #00d4aa;">180d</div>
+                            <div class="horizon-bar-track">
+                                <div class="horizon-bar-fill" style="width: 25%; background: #00d4aa;">37 windows</div>
+                            </div>
+                        </div>
+                        <div class="horizon-bar-row">
+                            <div class="horizon-bar-label" style="color: #4a9eff;">365d</div>
+                            <div class="horizon-bar-track">
+                                <div class="horizon-bar-fill" style="width: 45%; background: #4a9eff;">35 windows</div>
+                            </div>
+                        </div>
+                        <div class="horizon-bar-row">
+                            <div class="horizon-bar-label" style="color: #f7931a;">730d</div>
+                            <div class="horizon-bar-track">
+                                <div class="horizon-bar-fill" style="width: 70%; background: #f7931a;">31 windows</div>
+                            </div>
+                        </div>
+                        <div class="horizon-bar-row">
+                            <div class="horizon-bar-label" style="color: #ff4757;">1460d</div>
+                            <div class="horizon-bar-track">
+                                <div class="horizon-bar-fill" style="width: 95%; background: #ff4757;">23 windows</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Section 3: From 126 Scores to One Final Number ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">From 126 Scores to One Final Number</div>
+
+                    <div class="docs-two-col">
+                        <div class="docs-donut-container">
+                            <div class="docs-donut" style="background: conic-gradient(
+                                #f7931a 0deg 126deg,
+                                #ff4757 126deg 216deg,
+                                #eab308 216deg 270deg,
+                                #a855f7 270deg 306deg,
+                                #4a9eff 306deg 360deg
+                            );">
+                                <div class="docs-donut-center">
+                                    <div class="docs-donut-center-label">Composite</div>
+                                    <div class="docs-donut-center-value">9 Metrics</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="docs-weight-category">
+                                <div class="docs-weight-category-title" style="color: #f7931a;">Path Dynamics 35%</div>
+                                <div class="docs-weight-metric">DD Duration (13%) &middot; Recovery Time (12%) &middot; Time-in-DD (10%)</div>
+                            </div>
+                            <div class="docs-weight-category">
+                                <div class="docs-weight-category-title" style="color: #ff4757;">Tail Risk 25%</div>
+                                <div class="docs-weight-metric">Tail Index (13%) &middot; Band Coverage (12%)</div>
+                            </div>
+                            <div class="docs-weight-category">
+                                <div class="docs-weight-category-title" style="color: #eab308;">Distributional 15%</div>
+                                <div class="docs-weight-metric">KS Stat (7%) &middot; QQ Divergence (8%)</div>
+                            </div>
+                            <div class="docs-weight-category">
+                                <div class="docs-weight-category-title" style="color: #a855f7;">Vol Clustering 10%</div>
+                                <div class="docs-weight-metric">ACF of r&sup2; (10%)</div>
+                            </div>
+                            <div class="docs-weight-category">
+                                <div class="docs-weight-category-title" style="color: #4a9eff;">Forecast 15%</div>
+                                <div class="docs-weight-metric">MAPE (15%)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="docs-hero-score">
+                        <div class="docs-hero-score-label">RBB Walk-Forward Final Score</div>
+                        <div class="docs-hero-score-value">0.8109</div>
+                        <div class="docs-hero-score-sub">Validated across 126 out-of-sample windows. Zero lookahead bias.</div>
+                    </div>
+                </div>
+
+                <!-- ═══ Section 4: Tail Event Reproduction ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">Tail Event Reproduction @ 1460d</div>
+
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th style="color: var(--text-secondary);">Event</th>
+                                <th style="color: #f7931a;">RBB</th>
+                                <th style="color: #4a9eff;">GARCH</th>
+                                <th style="color: #a0a0b0;">GBM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>DD >= 50%</td><td>92.3%</td><td>59.2%</td><td>96.1%</td></tr>
+                            <tr><td>DD >= 75%</td><td>28.9%</td><td>17.8%</td><td>44.5%</td></tr>
+                            <tr><td>Duration >= 180d</td><td>95.4%</td><td>86.1%</td><td>98.4%</td></tr>
+                            <tr><td>Duration >= 365d</td><td>64.4%</td><td>44.7%</td><td>80.2%</td></tr>
+                            <tr><td>2014 Mt Gox</td><td>9.0%</td><td>6.7%</td><td>19.16%</td></tr>
+                            <tr><td>2018 Crash</td><td>10.28%</td><td>7.64%</td><td>21.44%</td></tr>
+                            <tr><td>2022 Crash</td><td>23.34%</td><td>11.86%</td><td>38.22%</td></tr>
+                            <tr><td>2020 Flash Crash</td><td>0.38%</td><td>0.3%</td><td>0.08%</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="docs-callout" style="margin-top: 20px;">
+                        GBM produces more 75%+ drawdowns than RBB but tail index accuracy tells the real story &mdash; <strong>RBB: 0.90</strong>, GARCH: 0.77, GBM: 0.48.
+                    </div>
+                </div>
+
+                <!-- ═══ Section 5: Production Config ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">Production Config &mdash; Forward Projection</div>
+
+                    <div class="docs-callout">
+                        <strong>Regime Block Bootstrap &mdash; Production Config</strong><br>
+                        Geometric bl=30 &middot; regime OFF &middot; full historical pool &middot; 4,947 training days &middot; starting price $66,885
+                    </div>
+
+                    <div class="docs-stat-cards">
+                        <div class="docs-stat-card">
+                            <div class="docs-stat-card-label">Median</div>
+                            <div class="docs-stat-card-value">$407,907</div>
+                        </div>
+                        <div class="docs-stat-card">
+                            <div class="docs-stat-card-label">Mean</div>
+                            <div class="docs-stat-card-value">$1,104,167</div>
+                        </div>
+                        <div class="docs-stat-card">
+                            <div class="docs-stat-card-label">P5</div>
+                            <div class="docs-stat-card-value">$41,973</div>
+                        </div>
+                        <div class="docs-stat-card">
+                            <div class="docs-stat-card-label">P95</div>
+                            <div class="docs-stat-card-value">$3,934,186</div>
+                        </div>
+                        <div class="docs-stat-card">
+                            <div class="docs-stat-card-label">Below Start</div>
+                            <div class="docs-stat-card-value">10.6%</div>
+                        </div>
+                    </div>
+
+                    <div class="docs-placeholder" style="height: 300px; margin-bottom: 16px;">
+                        Production Fan Chart Placeholder
+                    </div>
+
+                    <div class="docs-dd-cards">
+                        <div class="docs-dd-card">
+                            <div class="docs-dd-card-label">DD >= 50%</div>
+                            <div class="docs-dd-card-value">89.2%</div>
+                        </div>
+                        <div class="docs-dd-card">
+                            <div class="docs-dd-card-label">DD >= 75%</div>
+                            <div class="docs-dd-card-value">23.5%</div>
+                        </div>
+                        <div class="docs-dd-card">
+                            <div class="docs-dd-card-label">Dur >= 180d</div>
+                            <div class="docs-dd-card-value">97.1%</div>
+                        </div>
+                        <div class="docs-dd-card">
+                            <div class="docs-dd-card-label">Dur >= 365d</div>
+                            <div class="docs-dd-card-value">70.9%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Section 6: What This Means ═══ -->
+                <div class="docs-section">
+                    <div class="docs-section-title">What This Means</div>
+
+                    <div class="docs-callout">
+                        <strong>Of 5,000 simulated 4-year paths...</strong>
+                        <ul class="docs-bullet-list" style="margin-top: 12px;">
+                            <li>89.2% experience a drawdown of 50% or more at some point &mdash; this is normal BTC behavior, not a tail event.</li>
+                            <li>23.5% experience a drawdown of 75% or more &mdash; comparable to the 2018 and 2022 bear markets.</li>
+                            <li>70.9% spend at least one continuous year below their all-time high &mdash; extended drawdown durations are the norm, not the exception.</li>
+                        </ul>
+                    </div>
+
+                    <div class="docs-italic-footer">
+                        These are not hypothetical scenarios imposed on the model &mdash; they emerge naturally from resampling actual historical BTC return sequences. The block bootstrap cannot generate return patterns that never occurred. Every simulated crash is built from real crash blocks.
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- /tab-docs -->
 
         <div class="footer">
             BTC Sim Engine -- Robust Version | Walk-Forward Validated | @LongGamma
@@ -1099,15 +1789,13 @@
         function updatePDCards(bcr) {
             const idx = findBCRIndex(bcr);
             const grid = D.pd_vs_bcr.bcr_grid;
+            const modelColors = { rbb: '#f7931a', garch: '#4a9eff', gbm: '#a0a0b0' };
 
             ['rbb', 'garch', 'gbm'].forEach(model => {
                 const pd = D.pd_vs_bcr[model].pd[idx];
                 const el = document.getElementById('pd-' + model);
                 el.textContent = pd.toFixed(2) + '%';
-                // Color by severity
-                if (pd < 1) el.style.color = 'var(--accent-green)';
-                else if (pd < 5) el.style.color = 'var(--accent-orange)';
-                else el.style.color = 'var(--accent-red)';
+                el.style.color = modelColors[model];
             });
         }
 
@@ -1320,6 +2008,16 @@
             header.classList.toggle('active');
             const content = header.nextElementSibling;
             content.classList.toggle('active');
+        }
+
+        // ════════════════════════════════════════════
+        // TAB SWITCHING
+        // ════════════════════════════════════════════
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            document.querySelector('[data-tab="' + tabId + '"]').classList.add('active');
         }
 
         // ════════════════════════════════════════════
