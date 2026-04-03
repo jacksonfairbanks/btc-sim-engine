@@ -351,6 +351,40 @@ if selected_run is None:
     st.stop()
 
 
+# ── Auto-load production simulation results on first visit ─────────────
+if "prod_all" not in st.session_state:
+    _saved_path = Path("results/production_sim.json.gz")
+    if _saved_path.exists():
+        import gzip as _gzip_early
+        with _gzip_early.open(_saved_path, "rt", encoding="utf-8") as _f_early:
+            _saved_early = json.load(_f_early)
+        if "all_paths" in _saved_early:
+            _loaded_paths_early = {k: np.array(v) for k, v in _saved_early["all_paths"].items()}
+        else:
+            _loaded_paths_early = {"rbb": np.array(_saved_early["rbb_paths"])}
+        st.session_state["prod_all"] = {
+            "initial_price": _saved_early["initial_price"],
+            "data_end_date": _saved_early["data_end_date"],
+            "n_training_days": _saved_early["n_training_days"],
+            "models": _saved_early["models"],
+            "all_paths": _loaded_paths_early,
+        }
+        _rbb_early = _saved_early["models"]["rbb"]
+        st.session_state["prod_sim"] = {
+            "initial_price": _saved_early["initial_price"],
+            "data_end_date": _saved_early["data_end_date"],
+            "n_training_days": _saved_early["n_training_days"],
+            "model_meta": {"model_name": "regime_block_bootstrap",
+                           "label": "RBB (Block Bootstrap)",
+                           "specs": "Loaded from saved results"},
+            "p5": _rbb_early["p5"], "p25": _rbb_early["p25"], "p50": _rbb_early["p50"],
+            "p75": _rbb_early["p75"], "p95": _rbb_early["p95"],
+            "final_prices": _rbb_early["final_prices"],
+            "tail_events": _rbb_early["tail_events"],
+        }
+        del _saved_early, _loaded_paths_early, _rbb_early
+
+
 # ── Tabs ────────────────────────────────────────────────────────────────
 tab_exec, tab_lb, tab_overview, tab_wf, tab_opt, tab_audit, tab_export, tab_prod, tab_bcr, tab_docs = st.tabs([
     "Executive Summary",
@@ -4742,40 +4776,6 @@ with tab_prod:
             "desc": "Log-normal random walk — MLE drift and volatility. Walk-forward: 0.7630.",
         },
     }
-
-    # ── Auto-load persisted results on first visit ───────────────────
-    if "prod_all" not in st.session_state:
-        _saved_path = Path("results/production_sim.json.gz")
-        if _saved_path.exists():
-            import gzip as _gzip
-            with _gzip.open(_saved_path, "rt", encoding="utf-8") as _f:
-                _saved = json.load(_f)
-            # Handle both old format (rbb_paths) and new format (all_paths)
-            if "all_paths" in _saved:
-                _loaded_paths = {k: np.array(v) for k, v in _saved["all_paths"].items()}
-            else:
-                _loaded_paths = {"rbb": np.array(_saved["rbb_paths"])}
-            st.session_state["prod_all"] = {
-                "initial_price": _saved["initial_price"],
-                "data_end_date": _saved["data_end_date"],
-                "n_training_days": _saved["n_training_days"],
-                "models": _saved["models"],
-                "all_paths": _loaded_paths,
-            }
-            # Also populate prod_sim for Executive Summary backward compat
-            _rbb_m = _saved["models"]["rbb"]
-            st.session_state["prod_sim"] = {
-                "initial_price": _saved["initial_price"],
-                "data_end_date": _saved["data_end_date"],
-                "n_training_days": _saved["n_training_days"],
-                "model_meta": {"model_name": "regime_block_bootstrap",
-                               "label": "RBB (Block Bootstrap)",
-                               "specs": "Loaded from saved results"},
-                "p5": _rbb_m["p5"], "p25": _rbb_m["p25"], "p50": _rbb_m["p50"],
-                "p75": _rbb_m["p75"], "p95": _rbb_m["p95"],
-                "final_prices": _rbb_m["final_prices"],
-                "tail_events": _rbb_m["tail_events"],
-            }
 
     try:
         _prod_get_model, _ProdLoader, _prod_get_px = load_prod_deps()
