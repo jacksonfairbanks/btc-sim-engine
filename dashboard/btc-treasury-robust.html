@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Treasury Risk Model — Robust Version</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="data/sim-data.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a24;
+            --bg-card: #16161f;
+            --accent-orange: #f7931a;
+            --accent-orange-dim: #f7931a40;
+            --accent-green: #00d4aa;
+            --accent-red: #ff4757;
+            --accent-blue: #4a9eff;
+            --accent-purple: #a855f7;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border-color: #2a2a3a;
+            --glow-orange: 0 0 20px #f7931a40;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, #f7931a08 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, #4a9eff08 0%, transparent 50%);
+        }
+
+        .container { position: relative; z-index: 1; max-width: 1800px; margin: 0 auto; padding: 20px; }
+
+        header {
+            text-align: center; padding: 40px 0 30px;
+            border-bottom: 1px solid var(--border-color); margin-bottom: 30px;
+        }
+
+        .logo { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; }
+
+        .btc-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, var(--accent-orange) 0%, #e8850f 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 700; box-shadow: var(--glow-orange);
+        }
+
+        h1 {
+            font-size: 2.5rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-orange) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .subtitle { color: var(--text-secondary); font-size: 1.1rem; margin-top: 8px; }
+        .tag { display: inline-block; padding: 4px 12px; background: rgba(0,212,170,0.15); color: var(--accent-green); border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+
+        .main-grid { display: grid; grid-template-columns: 380px 1fr; gap: 25px; }
+
+        /* ── Sidebar ── */
+        .control-panel {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 25px; height: fit-content;
+            position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 1.1rem; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+        }
+        .panel-title::before { content: ''; width: 4px; height: 20px; background: var(--accent-orange); border-radius: 2px; }
+
+        .control-section {
+            margin-bottom: 20px; padding: 16px; border: 1px solid var(--border-color);
+            border-radius: 10px; background: var(--bg-secondary);
+        }
+
+        .section-label {
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--text-secondary); margin-bottom: 14px; padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .bcr-hero {
+            background: linear-gradient(135deg, rgba(247,147,26,0.15) 0%, rgba(247,147,26,0.05) 100%);
+            border: 2px solid var(--accent-orange); border-radius: 16px;
+            padding: 20px; text-align: center; margin-bottom: 15px;
+            box-shadow: 0 0 30px rgba(247,147,26,0.1);
+        }
+        .bcr-hero-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .bcr-hero-value { font-size: 3rem; font-weight: 700; color: var(--accent-orange); font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 30px rgba(247,147,26,0.3); }
+        .bcr-hero-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+
+        .slider-row { margin-bottom: 14px; }
+        .slider-row label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; }
+        .slider-row label span { color: var(--accent-orange); font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+        input[type="range"] {
+            width: 100%; height: 6px; -webkit-appearance: none; background: var(--bg-tertiary);
+            border-radius: 3px; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: var(--accent-orange); cursor: pointer; box-shadow: 0 0 10px rgba(247,147,26,0.4);
+        }
+
+        .derived-row {
+            display: flex; justify-content: space-between; padding: 6px 0;
+            border-bottom: 1px solid var(--border-color); font-size: 0.8rem;
+        }
+        .derived-row:last-child { border-bottom: none; }
+        .derived-label { color: var(--text-muted); }
+        .derived-value { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+
+        details summary {
+            cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.2px; color: var(--text-secondary); padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color); list-style: none; user-select: none;
+        }
+        details summary::after { content: ' +'; color: var(--text-muted); }
+        details[open] summary::after { content: ' -'; }
+
+        .input-row { margin-bottom: 10px; }
+        .input-row label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+        .input-row input {
+            width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 6px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; outline: none;
+        }
+        .input-row input:focus { border-color: var(--accent-orange); }
+
+        /* ── Main content ── */
+        .chart-section {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 25px; margin-bottom: 25px;
+        }
+        .chart-section h2 {
+            font-size: 1.3rem; font-weight: 600; margin-bottom: 6px; color: var(--text-primary);
+        }
+        .chart-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; }
+
+        .hero-metrics {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;
+        }
+        .metric-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 18px; text-align: center;
+        }
+        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .metric-value { font-size: 1.8rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .metric-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+        .toggle-row { display: flex; gap: 8px; margin-bottom: 16px; }
+        .toggle-btn {
+            padding: 8px 16px; background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--text-secondary); font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .toggle-btn.active { background: rgba(247,147,26,0.15); border-color: var(--accent-orange); color: var(--accent-orange); }
+
+        .methodology {
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px;
+            padding: 25px; margin-bottom: 25px; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7;
+        }
+        .methodology h2 { color: var(--text-primary); margin-bottom: 16px; }
+        .methodology h3 { color: var(--accent-orange); margin: 16px 0 8px; font-size: 1rem; }
+        .methodology table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+        .methodology th, .methodology td { padding: 8px 12px; border: 1px solid var(--border-color); text-align: left; }
+        .methodology th { background: var(--bg-tertiary); color: var(--accent-orange); font-weight: 600; }
+
+        .footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="container">
+
+        <header>
+            <div class="logo">
+                <div class="btc-icon">&#8383;</div>
+                <h1>BTC Treasury Risk Model</h1>
+            </div>
+            <div class="subtitle">Robust Version — Walk-Forward Validated Simulation Engine</div>
+            <div class="tag">5,000 paths x 3 models x 9-metric scoring</div>
+        </header>
+
+        <div class="main-grid">
+
+            <!-- ═══ SIDEBAR ═══ -->
+            <div class="control-panel">
+                <div class="panel-title">Risk Parameters</div>
+
+                <div class="bcr-hero">
+                    <div class="bcr-hero-label">Bitcoin Coverage Ratio</div>
+                    <div class="bcr-hero-value" id="bcr-display">40x</div>
+                    <div class="bcr-hero-sub">BCR = 1 / (amplification x dividend rate)</div>
+                </div>
+
+                <div class="control-section">
+                    <div class="section-label">BCR — Primary Driver</div>
+                    <div class="slider-row">
+                        <label>Starting BCR <span id="bcr-val">40x</span></label>
+                        <input type="range" id="bcr-slider" min="2" max="40" value="40" step="2">
+                    </div>
+                    <div class="slider-row">
+                        <label>Dividend Rate <span id="div-rate-val">10.0%</span></label>
+                        <input type="range" id="div-rate-slider" min="1" max="20" value="10" step="0.5">
+                    </div>
+                    <div style="margin-top:12px;">
+                        <div class="derived-row">
+                            <span class="derived-label">Implied Amplification</span>
+                            <span class="derived-value" id="amp-display">25.0%</span>
+                        </div>
+                        <div class="derived-row">
+                            <span class="derived-label">PD (RBB, 4yr)</span>
+                            <span class="derived-value" id="pd-display" style="color:var(--accent-green)">0.06%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <details>
+                        <summary>Dollar Context (presentation only)</summary>
+                        <div style="margin-top:14px;">
+                            <div class="input-row">
+                                <label>NAV — BTC Treasury ($M)</label>
+                                <input type="number" id="nav-input" value="1000" step="100">
+                            </div>
+                            <div style="margin-top:12px;">
+                                <div class="derived-row">
+                                    <span class="derived-label">PPE Notional</span>
+                                    <span class="derived-value" id="ppe-display">$250M</span>
+                                </div>
+                                <div class="derived-row">
+                                    <span class="derived-label">Annual Dividend</span>
+                                    <span class="derived-value" id="ann-div-display">$25.0M</span>
+                                </div>
+                                <div class="derived-row">
+                                    <span class="derived-label">Monthly Obligation</span>
+                                    <span class="derived-value" id="monthly-display">$2.08M</span>
+                                </div>
+                                <div class="derived-row">
+                                    <span class="derived-label">Months of Runway</span>
+                                    <span class="derived-value" id="runway-display">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="control-section" style="background: rgba(247,147,26,0.05); border-color: rgba(247,147,26,0.2);">
+                    <div class="section-label" style="color:var(--accent-orange);">Simulation Engine</div>
+                    <div class="derived-row"><span class="derived-label">Paths per model</span><span class="derived-value" id="nsims-display">—</span></div>
+                    <div class="derived-row"><span class="derived-label">Horizon</span><span class="derived-value" id="horizon-display">—</span></div>
+                    <div class="derived-row"><span class="derived-label">BTC start price</span><span class="derived-value" id="price-display">—</span></div>
+                    <div class="derived-row"><span class="derived-label">Data through</span><span class="derived-value" id="date-display">—</span></div>
+                    <div class="derived-row"><span class="derived-label">RBB WF Score</span><span class="derived-value" style="color:var(--accent-green)">0.8109</span></div>
+                </div>
+            </div>
+
+            <!-- ═══ MAIN CONTENT ═══ -->
+            <div class="content">
+
+                <!-- Hero Metrics -->
+                <div class="hero-metrics" id="hero-metrics"></div>
+
+                <!-- Price Fan Chart -->
+                <div class="chart-section">
+                    <h2>Price Path Projection — 3 Models</h2>
+                    <div class="chart-desc">RBB envelope (90%/50% CI) with median lines for all models. Log scale.</div>
+                    <div id="chart-price" style="height:500px;"></div>
+                </div>
+
+                <!-- BCR Percentile Curve (HERO) -->
+                <div class="chart-section" style="border-color: var(--accent-orange); box-shadow: 0 0 30px rgba(247,147,26,0.05);">
+                    <h2>BCR Percentile Curve — Probability of Default</h2>
+                    <div class="chart-desc">Inverse CDF: each point shows the BCR at that percentile of 5,000 paths. Where a curve crosses BCR=1 = failure rate.</div>
+                    <div class="toggle-row">
+                        <button class="toggle-btn active" id="toggle-terminal" onclick="setBCRMode('terminal')">Terminal BCR</button>
+                        <button class="toggle-btn" id="toggle-minimum" onclick="setBCRMode('minimum')">Minimum BCR</button>
+                    </div>
+                    <div id="chart-bcr-curve" style="height:700px;"></div>
+                </div>
+
+                <!-- PD vs BCR -->
+                <div class="chart-section">
+                    <h2>Probability of Default vs Starting BCR</h2>
+                    <div class="chart-desc">At what BCR does default risk become negligible? Failure = BCR drops below 1 at any point during 4-year horizon.</div>
+                    <div id="chart-pd-vs-bcr" style="height:450px;"></div>
+                </div>
+
+                <!-- P5 Min BCR Stress Profile -->
+                <div class="chart-section">
+                    <h2>Stress Profile — 5th Percentile Minimum BCR</h2>
+                    <div class="chart-desc">Even at high starting BCR, the worst 5% of paths see BCR drop to these levels.</div>
+                    <div id="chart-stress" style="height:450px;"></div>
+                </div>
+
+                <!-- Cumulative Failure -->
+                <div class="chart-section">
+                    <h2>Cumulative Failure by Month</h2>
+                    <div class="chart-desc">When do failures happen? Most occur in the first 1-2 years before BTC drift compounds.</div>
+                    <div id="chart-cum-fail" style="height:400px;"></div>
+                </div>
+
+                <!-- Methodology -->
+                <div class="methodology">
+                    <h2>Methodology</h2>
+                    <h3>Models</h3>
+                    <table>
+                        <tr><th>Model</th><th>Type</th><th>Walk-Forward Score</th><th>Description</th></tr>
+                        <tr><td style="color:var(--accent-orange);font-weight:600">RBB</td><td>Nonparametric</td><td>0.8109</td><td>Stationary block bootstrap. Resamples actual historical BTC return sequences. Geometric block length (30d mean). No regime switching.</td></tr>
+                        <tr><td style="color:var(--accent-blue);font-weight:600">GARCH(1,1)</td><td>Parametric</td><td>0.7800</td><td>Volatility clustering model. Student-t innovations (nu=3.28). Captures big-moves-follow-big-moves but generates one day at a time.</td></tr>
+                        <tr><td style="color:var(--text-muted);font-weight:600">GBM</td><td>Parametric</td><td>0.7630</td><td>Log-normal random walk. Constant drift and volatility. Baseline control — if a model can't beat GBM, it's not worth its complexity.</td></tr>
+                    </table>
+                    <h3>Validation</h3>
+                    <p>9 scoring metrics (path dynamics 35%, tail risk 25%, distributional 15%, vol clustering 10%, forecast 15%). Walk-forward validated across 126 out-of-sample windows with exponential recency weighting (2-year half-life). RBB outperforms GARCH by +0.031 and GBM by +0.048.</p>
+                    <h3>BCR Solvency Logic</h3>
+                    <p>BCR = BTC reserves ($) / annual dividend. Monthly: sell BTC to meet dividend obligation, recompute BCR. Failure = BCR &lt; 1 at any point. BCR is the only driver — amplification and dividend rate collapse into BCR. Dollar amounts are presentation-layer only.</p>
+                    <h3>Data</h3>
+                    <p>BTC daily OHLCV from 2013 to present (Yahoo Finance). Models trained on full history. 5,000 paths x 1,460 days (4 years) per model.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            BTC Sim Engine — Robust Version | Walk-Forward Validated | @LongGamma
+        </div>
+    </div>
+
+    <script>
+        const D = SIM_DATA;
+        const META = D.metadata;
+        const COLORS = { rbb: '#f7931a', garch: '#4a9eff', gbm: '#606070' };
+        const LABELS = { rbb: 'RBB (Block Bootstrap)', garch: 'GARCH(1,1)', gbm: 'GBM (Baseline)' };
+        const LAYOUT = {
+            paper_bgcolor: '#0a0a0f', plot_bgcolor: '#16161f',
+            font: { family: 'JetBrains Mono, monospace', color: '#a0a0b0', size: 12 },
+            title: { font: { color: '#ffffff', size: 14 } },
+            legend: { font: { color: '#a0a0b0', size: 11 } },
+            xaxis: { gridcolor: '#1a1a24', zerolinecolor: '#1a1a24', tickfont: { color: '#a0a0b0' } },
+            yaxis: { gridcolor: '#1a1a24', zerolinecolor: '#1a1a24', tickfont: { color: '#a0a0b0' } },
+            margin: { l: 60, r: 30, t: 50, b: 50 },
+        };
+
+        let bcrMode = 'terminal';
+
+        // ── Init ──
+        document.getElementById('nsims-display').textContent = META.n_sims.toLocaleString();
+        document.getElementById('horizon-display').textContent = META.horizon_days + 'd (' + (META.horizon_days/365).toFixed(0) + 'yr)';
+        document.getElementById('price-display').textContent = '$' + META.initial_price.toLocaleString();
+        document.getElementById('date-display').textContent = META.data_end_date;
+
+        // ── Sidebar logic ──
+        function updateSidebar() {
+            const bcr = parseInt(document.getElementById('bcr-slider').value);
+            const divRate = parseFloat(document.getElementById('div-rate-slider').value) / 100;
+            const navM = parseFloat(document.getElementById('nav-input').value) || 1000;
+            const nav = navM * 1e6;
+
+            const amp = 1 / (bcr * divRate);
+            const ppeNotional = nav * amp;
+            const annDiv = nav / bcr;
+            const monthlyObl = annDiv / 12;
+            const runway = Math.floor((nav / META.initial_price) / (monthlyObl / META.initial_price));
+
+            document.getElementById('bcr-display').textContent = bcr + 'x';
+            document.getElementById('bcr-val').textContent = bcr + 'x';
+            document.getElementById('div-rate-val').textContent = (divRate * 100).toFixed(1) + '%';
+            document.getElementById('amp-display').textContent = (amp * 100).toFixed(1) + '%';
+            document.getElementById('ppe-display').textContent = '$' + (ppeNotional / 1e6).toFixed(0) + 'M';
+            document.getElementById('ann-div-display').textContent = '$' + (annDiv / 1e6).toFixed(1) + 'M';
+            document.getElementById('monthly-display').textContent = '$' + (monthlyObl / 1e6).toFixed(2) + 'M';
+            document.getElementById('runway-display').textContent = runway + ' months';
+
+            // Find PD for current BCR from pre-computed data
+            const grid = D.pd_vs_bcr.bcr_grid;
+            const idx = grid.indexOf(bcr);
+            let pd = '—';
+            if (idx >= 0) {
+                pd = D.pd_vs_bcr.rbb.pd[idx].toFixed(2) + '%';
+            }
+            document.getElementById('pd-display').textContent = pd;
+            const pdVal = idx >= 0 ? D.pd_vs_bcr.rbb.pd[idx] : 0;
+            document.getElementById('pd-display').style.color = pdVal < 1 ? 'var(--accent-green)' : pdVal < 5 ? 'var(--accent-orange)' : 'var(--accent-red)';
+
+            updateHeroMetrics(bcr, idx);
+            updateBCRCurve(bcr, idx);
+        }
+
+        function updateHeroMetrics(bcr, idx) {
+            const grid = D.pd_vs_bcr.bcr_grid;
+            const rbbPD = idx >= 0 ? D.pd_vs_bcr.rbb.pd[idx] : 0;
+            const garchPD = idx >= 0 ? D.pd_vs_bcr.garch.pd[idx] : 0;
+            const gbmPD = idx >= 0 ? D.pd_vs_bcr.gbm.pd[idx] : 0;
+
+            const html = `
+                <div class="metric-card">
+                    <div class="metric-label">Starting BCR</div>
+                    <div class="metric-value" style="color:var(--accent-orange)">${bcr}x</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">PD — RBB (4yr)</div>
+                    <div class="metric-value" style="color:${rbbPD < 1 ? 'var(--accent-green)' : rbbPD < 5 ? 'var(--accent-orange)' : 'var(--accent-red)'}">${rbbPD.toFixed(2)}%</div>
+                    <div class="metric-sub">Production model (0.8109)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">PD — GARCH</div>
+                    <div class="metric-value" style="color:${garchPD < 1 ? 'var(--accent-green)' : garchPD < 5 ? 'var(--accent-orange)' : 'var(--accent-red)'}">${garchPD.toFixed(2)}%</div>
+                    <div class="metric-sub">Vol clustering (0.7800)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">PD — GBM</div>
+                    <div class="metric-value" style="color:${gbmPD < 1 ? 'var(--accent-green)' : gbmPD < 5 ? 'var(--accent-orange)' : 'var(--accent-red)'}">${gbmPD.toFixed(2)}%</div>
+                    <div class="metric-sub">Baseline (0.7630)</div>
+                </div>
+            `;
+            document.getElementById('hero-metrics').innerHTML = html;
+        }
+
+        // ── Charts ──
+        function drawPriceChart() {
+            const n = D.price_percentiles.rbb.p50.length;
+            const x = Array.from({length: n}, (_, i) => i * 30);
+            const rbb = D.price_percentiles.rbb;
+            const traces = [
+                { x: x.concat([...x].reverse()), y: rbb.p5.concat([...rbb.p95].reverse()), fill: 'toself', fillcolor: 'rgba(247,147,26,0.06)', line: {color:'transparent'}, name: 'RBB 90% CI' },
+                { x: x.concat([...x].reverse()), y: rbb.p25.concat([...rbb.p75].reverse()), fill: 'toself', fillcolor: 'rgba(247,147,26,0.15)', line: {color:'transparent'}, name: 'RBB 50% CI' },
+            ];
+            ['rbb','garch','gbm'].forEach(k => {
+                traces.push({ x, y: D.price_percentiles[k].p50, mode: 'lines',
+                    line: { color: COLORS[k], width: k==='rbb'?2.5:2, dash: k==='rbb'?'solid':'dash' },
+                    name: LABELS[k] + ' Median' });
+            });
+            Plotly.newPlot('chart-price', traces, {
+                ...LAYOUT, yaxis: {...LAYOUT.yaxis, type:'log', title:'Price (USD)'},
+                xaxis: {...LAYOUT.xaxis, title:'Days'},
+                shapes: [{ type:'line', x0:0, x1:x[x.length-1], y0:META.initial_price, y1:META.initial_price,
+                    line:{color:'#606070', width:1, dash:'dot'} }],
+            }, {responsive:true});
+        }
+
+        function updateBCRCurve(bcr, idx) {
+            const curves = D.bcr_curves_by_level;
+            const pctRange = curves.pct_range;
+            const dataKey = bcrMode === 'terminal' ? 'terminal' : 'minimum';
+            const safeIdx = idx >= 0 ? idx : 19; // default to BCR=40 (last index)
+
+            const traces = [];
+            // Red failure zone
+            traces.push({
+                x: [0, 100], y: [1, 1], mode: 'lines', line: {color:'transparent'},
+                showlegend: false,
+            });
+
+            ['rbb','garch','gbm'].forEach(k => {
+                if (!curves[k]) return;
+                const yVals = curves[k][dataKey][safeIdx];
+                traces.push({ x: pctRange, y: yVals, mode: 'lines',
+                    line: { color: COLORS[k], width: k==='rbb'?3:2 },
+                    name: LABELS[k] });
+            });
+
+            const label = bcrMode === 'terminal' ? 'Terminal BCR' : 'Minimum BCR';
+            Plotly.newPlot('chart-bcr-curve', traces, {
+                ...LAYOUT,
+                xaxis: { ...LAYOUT.xaxis, title: 'Percentile (sorted paths, worst to best)',
+                    tickvals: [1,5,10,25,50,75,90,95,99], range:[0,100] },
+                yaxis: { ...LAYOUT.yaxis, type:'log', title: label,
+                    tickvals: [0.1,0.5,1,2,5,10,20,50,100,500,1000,5000,10000,100000],
+                    ticktext: ['0.1','0.5','1','2','5','10','20','50','100','500','1K','5K','10K','100K'] },
+                shapes: [{
+                    type:'rect', x0:0, x1:100, y0:0, y1:1,
+                    fillcolor:'rgba(255,71,87,0.08)', line:{width:0},
+                }, {
+                    type:'line', x0:0, x1:100, y0:1, y1:1,
+                    line:{color:'#ff4757', width:2, dash:'dash'},
+                }],
+                annotations: [{
+                    x:5, y:0.5, text:'FAILURE ZONE', showarrow:false,
+                    font:{color:'#ff4757', size:11}, xref:'x', yref:'y',
+                }],
+                title: label + ' at BCR=' + bcr + 'x — ' + META.n_sims.toLocaleString() + ' Paths',
+            }, {responsive:true});
+        }
+
+        function setBCRMode(mode) {
+            bcrMode = mode;
+            document.getElementById('toggle-terminal').classList.toggle('active', mode==='terminal');
+            document.getElementById('toggle-minimum').classList.toggle('active', mode==='minimum');
+            const bcr = parseInt(document.getElementById('bcr-slider').value);
+            const idx = D.pd_vs_bcr.bcr_grid.indexOf(bcr);
+            updateBCRCurve(bcr, idx);
+        }
+
+        function drawPDvsBCR() {
+            const x = D.pd_vs_bcr.bcr_grid;
+            const traces = [];
+            ['rbb','garch','gbm'].forEach(k => {
+                traces.push({ x, y: D.pd_vs_bcr[k].pd, mode:'lines+markers',
+                    line:{color:COLORS[k], width:k==='rbb'?2.5:2}, marker:{size:6},
+                    name: LABELS[k] });
+            });
+            Plotly.newPlot('chart-pd-vs-bcr', traces, {
+                ...LAYOUT, xaxis:{...LAYOUT.xaxis, title:'Starting BCR'},
+                yaxis:{...LAYOUT.yaxis, title:'Probability of Default (%)'},
+            }, {responsive:true});
+        }
+
+        function drawStress() {
+            const x = D.pd_vs_bcr.bcr_grid;
+            const traces = [];
+            ['rbb','garch','gbm'].forEach(k => {
+                traces.push({ x, y: D.pd_vs_bcr[k].p5_min_bcr, mode:'lines+markers',
+                    line:{color:COLORS[k], width:k==='rbb'?2.5:2}, marker:{size:6},
+                    name: LABELS[k] });
+            });
+            Plotly.newPlot('chart-stress', traces, {
+                ...LAYOUT, xaxis:{...LAYOUT.xaxis, title:'Starting BCR'},
+                yaxis:{...LAYOUT.yaxis, title:'P5 Minimum BCR Reached'},
+                shapes:[{type:'line', x0:x[0], x1:x[x.length-1], y0:1, y1:1,
+                    line:{color:'#ff4757', width:2, dash:'dash'}}],
+            }, {responsive:true});
+        }
+
+        function drawCumFail() {
+            const n = D.bcr_default.rbb.cumulative_failure.length;
+            const x = Array.from({length:n}, (_,i)=>i+1);
+            const traces = [];
+            ['rbb','garch','gbm'].forEach(k => {
+                if (!D.bcr_default[k]) return;
+                traces.push({ x, y:D.bcr_default[k].cumulative_failure, mode:'lines',
+                    line:{color:COLORS[k], width:2}, name:LABELS[k] });
+            });
+            Plotly.newPlot('chart-cum-fail', traces, {
+                ...LAYOUT, xaxis:{...LAYOUT.xaxis, title:'Month'},
+                yaxis:{...LAYOUT.yaxis, title:'Cumulative Failure (%)'},
+            }, {responsive:true});
+        }
+
+        // ── Event listeners ──
+        document.getElementById('bcr-slider').addEventListener('input', updateSidebar);
+        document.getElementById('div-rate-slider').addEventListener('input', updateSidebar);
+        document.getElementById('nav-input').addEventListener('input', updateSidebar);
+
+        // ── Initial render ──
+        drawPriceChart();
+        drawPDvsBCR();
+        drawStress();
+        drawCumFail();
+        updateSidebar();
+    </script>
+</body>
+</html>
